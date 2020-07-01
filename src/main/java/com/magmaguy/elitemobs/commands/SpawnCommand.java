@@ -55,8 +55,11 @@ public class SpawnCommand {
                 validEntities += entities + ", ";
             commandSender.sendMessage("[EliteMobs] Valid mob types:" + validEntities);
             String validNames = "";
-            for (String fileName : CustomBossesConfig.getCustomBosses().keySet())
-                validNames += fileName + ", ";
+            int i = 0;
+            for (String fileName : CustomBossesConfig.getCustomBosses().keySet()) {          
+                validNames += i % 2 == 0 ? "§2" + fileName + ", " : "§a" + fileName + ", ";
+                i++;
+            }
             commandSender.sendMessage("[EliteMobs] Valid custom mob names: " + validNames);
         }
 
@@ -69,15 +72,18 @@ public class SpawnCommand {
                 configName += ".yml";
 
             if (!CustomBossesConfig.getCustomBosses().containsKey(configName)) {
-                commandSender.sendMessage("[EliteMobs] Error trying to obtain mob type or name.");
+                commandSender.sendMessage("§7[EliteMobs] §fError trying to obtain mob type or name.");
                 String validEntities = "";
                 for (EntityType entities : EliteMobProperties.getValidMobTypes())
                     validEntities += entities + ", ";
-                commandSender.sendMessage("[EliteMobs] Valid mob types:" + validEntities);
+                commandSender.sendMessage("§7[EliteMobs] §fValid mob types:" + validEntities);
                 String validNames = "";
-                for (String fileName : CustomBossesConfig.getCustomBosses().keySet())
-                    validNames += fileName + ", ";
-                commandSender.sendMessage("[EliteMobs] Valid custom mob names: " + validNames);
+                int i = 0;
+                for (String fileName : CustomBossesConfig.getCustomBosses().keySet()) {          
+                    validNames += i % 2 == 0 ? "§2" + fileName + ", " : "§a" + fileName + ", ";
+                    i++;
+                }
+                commandSender.sendMessage("§7[EliteMobs] §fValid custom mob names: " + validNames);
                 return;
             } else
                 isCustomBoss = true;

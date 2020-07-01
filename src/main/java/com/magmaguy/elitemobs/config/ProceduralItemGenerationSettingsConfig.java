@@ -173,6 +173,8 @@ public class ProceduralItemGenerationSettingsConfig {
                 "Ender Dragon",
                 "Wither",
                 "Illusioner",
+                "Piglin",
+                "Hoglin",
                 "Parrot",
                 "Giant",
                 "Killer Bunny",

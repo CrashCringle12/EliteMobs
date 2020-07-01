@@ -337,66 +337,66 @@ public class CommandHandler implements CommandExecutor {
 
             Player player = (Player) commandSender;
 
-            player.sendMessage("[EliteMobs] " + ConfigValues.translationConfig.getString(TranslationConfig.VALID_COMMANDS));
+            player.sendMessage("§7[EliteMobs] " + ConfigValues.translationConfig.getString(TranslationConfig.VALID_COMMANDS));
             if (silentPermCheck(STATS, commandSender))
-                player.sendMessage("/elitemobs stats");
+                player.sendMessage("§2/EliteMobs stats");
             if (silentPermCheck(SHOP, commandSender))
-                player.sendMessage("/elitemobs shop");
+                player.sendMessage("§2/EliteMobs shop");
             if (silentPermCheck(CUSTOMSHOP, commandSender))
-                player.sendMessage("/elitemobs customshop");
+                player.sendMessage("§2/EliteMobs customshop");
             if (silentPermCheck(CURRENCY_WALLET, commandSender))
-                player.sendMessage("/elitemobs wallet");
+                player.sendMessage("§2/EliteMobs wallet");
             if (silentPermCheck(CURRENCY_COINTOP, commandSender))
-                player.sendMessage("/elitemobs cointop");
+                player.sendMessage("§2/EliteMobs cointop");
             if (silentPermCheck(CURRENCY_PAY, commandSender))
-                player.sendMessage("/elitemobs pay [username]");
+                player.sendMessage("§2/EliteMobs pay §a<username>");
             if (silentPermCheck(CURRENCY_ADD, commandSender))
-                player.sendMessage("/elitemobs add [username]");
+                player.sendMessage("§2/EliteMobs add §a<username>");
             if (silentPermCheck(CURRENCY_SUBTRACT, commandSender))
-                player.sendMessage("/elitemobs subtract [username]");
+                player.sendMessage("§2/EliteMobs subtract §a<username>");
             if (silentPermCheck(CURRENCY_SET, commandSender))
-                player.sendMessage("/elitemobs set [username]");
+                player.sendMessage("§2/EliteMobs set §a<username>");
             if (silentPermCheck(CURRENCY_CHECK, commandSender))
-                player.sendMessage("/elitemobs check [username]");
+                player.sendMessage("§2/EliteMobs check §a<username>");
             if (silentPermCheck(RELOAD_CONFIGS, commandSender))
-                player.sendMessage("/elitemobs reload");
+                player.sendMessage("§2/EliteMobs reload");
             if (silentPermCheck(KILLALL_AGGRESSIVEELITES, commandSender))
-                player.sendMessage("/elitemobs kill aggressive");
+                player.sendMessage("§2/EliteMobs kill §aaggressive");
             if (silentPermCheck(KILLALL_PASSIVEELITES, commandSender))
-                player.sendMessage("/elitemobs kill passive");
+                player.sendMessage("§2/EliteMobs kill §apassive");
             if (silentPermCheck(SIMLOOT, commandSender))
-                player.sendMessage("/elitemobs simloot [mob level]");
+                player.sendMessage("§2/EliteMobs simloot §a<mob level>");
             if (silentPermCheck(GETLOOT, commandSender))
-                player.sendMessage("/elitemobs getloot [loot name (no loot name = AdventurersGuildMenu)]");
+                player.sendMessage("§2/EliteMobs getloot §a<loot name (no loot name = AdventurersGuildMenu)>");
             if (silentPermCheck(GIVELOOT, commandSender))
-                player.sendMessage("/elitemobs giveloot [player name] random/[loot_name_underscore_for_spaces]");
+                player.sendMessage("§2/EliteMobs giveloot §a<player name> random/<loot_name_underscore_for_spaces>");
             if (silentPermCheck(SPAWNMOB, commandSender))
-                player.sendMessage("/elitemobs SpawnMob [mobType] [mobLevel] [mobPower] [mobPower2(keep adding as many as you'd like)]");
+                player.sendMessage("§2/EliteMobs SpawnMob §a<mobType> <mobLevel> §a[mobPower] [mobPower2(keep adding as many as you'd like)]");
             if (silentPermCheck(CHECK_MAX_TIER, commandSender))
-                commandSender.sendMessage("/elitemobs checkmaxtier");
+                commandSender.sendMessage("§2/EliteMobs checkmaxtier");
             if (silentPermCheck(SET_MAX_TIER, commandSender))
-                commandSender.sendMessage("/elitemobs setmaxtier [tier]");
+                commandSender.sendMessage("§2/EliteMobs setmaxtier §a<tier>");
             if (silentPermCheck(GET_TIER, commandSender))
-                commandSender.sendMessage("/elitemobs gettier [tier]");
+                commandSender.sendMessage("§2/EliteMobs gettier §a<tier>");
             if (silentPermCheck("elitemobs.quest", commandSender)) {
-                commandSender.sendMessage("/elitemobs quest");
-                commandSender.sendMessage("/elitemobs quest status");
+                commandSender.sendMessage("§2/EliteMobs quest");
+                commandSender.sendMessage("§2/EliteMobs quest §astatus");
             }
 
 
         } else if (commandSender instanceof ConsoleCommandSender) {
 
-            commandSender.sendMessage("[EliteMobs] " + ConfigValues.translationConfig.getString(TranslationConfig.INVALID_COMMAND));
-            commandSender.sendMessage("elitemobs stats");
-            commandSender.sendMessage("elitemobs reload");
-            commandSender.sendMessage("elitemobs check [username]");
-            commandSender.sendMessage("elitemobs set [username]");
-            commandSender.sendMessage("elitemobs add [username]");
-            commandSender.sendMessage("elitemobs subtract [username]");
-            commandSender.sendMessage("elitemobs killall passiveelites");
-            commandSender.sendMessage("elitemobs killall aggressiveelites");
-            commandSender.sendMessage("elitemobs giveloot [player name] random/[loot_name_underscore_for_spaces]");
-            commandSender.sendMessage("elitemobs SpawnMob [worldName] [x] [y] [z] [mobType] [mobLevel] [mobPower] [mobPower2(keep adding as many as you'd like)]");
+            commandSender.sendMessage("§7[EliteMobs] " + ConfigValues.translationConfig.getString(TranslationConfig.INVALID_COMMAND));
+            commandSender.sendMessage("§2EliteMobs §astats");
+            commandSender.sendMessage("§2EliteMobs §areload");
+            commandSender.sendMessage("§2EliteMobs §acheck §2<username>");
+            commandSender.sendMessage("§2EliteMobs §aset §2<username>");
+            commandSender.sendMessage("§2EliteMobs §aadd §2<username>");
+            commandSender.sendMessage("§2EliteMobs §asubtract §2<username>");
+            commandSender.sendMessage("§2EliteMobs §akillall passiveelites");
+            commandSender.sendMessage("§2Elitemobs §akillall aggressiveelites");
+            commandSender.sendMessage("§2Elitemobs §agiveloot <player name> random/[loot_name_underscore_for_spaces]");
+            commandSender.sendMessage("§2Elitemobs §aSpawnMob <worldName> <x> <y> <z> <mobType> <mobLevel> [mobPower] [mobPower2(keep adding as many as you'd like)]");
 
         }
 

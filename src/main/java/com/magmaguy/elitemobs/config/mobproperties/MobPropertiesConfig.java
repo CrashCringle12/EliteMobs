@@ -54,7 +54,9 @@ public class MobPropertiesConfig {
             new SuperCowConfig(),
             new SuperMushroomCowConfig(),
             new SuperPigConfig(),
-            new SuperSheepConfig()
+            new SuperSheepConfig(),
+            new EliteHoglinConfig(),
+            new ElitePiglinConfig()
     ));
 
     public static void initializeConfigs() {
