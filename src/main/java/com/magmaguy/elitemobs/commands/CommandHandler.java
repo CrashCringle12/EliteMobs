@@ -2,7 +2,7 @@ package com.magmaguy.elitemobs.commands;
 
 import com.magmaguy.elitemobs.adventurersguild.GuildRankMenuHandler;
 import com.magmaguy.elitemobs.commands.admin.CheckTierOthersCommand;
-import com.magmaguy.elitemobs.commands.admin.CustomBossDebugScreen;
+import com.magmaguy.elitemobs.commands.admin.DebugScreen;
 import com.magmaguy.elitemobs.commands.admin.StatsCommand;
 import com.magmaguy.elitemobs.commands.admin.npc.NPCCommands;
 import com.magmaguy.elitemobs.commands.combat.CheckTierCommand;
@@ -18,6 +18,7 @@ import com.magmaguy.elitemobs.config.TranslationConfig;
 import com.magmaguy.elitemobs.custombosses.CustomBossEntity;
 import com.magmaguy.elitemobs.items.ShareItem;
 import com.magmaguy.elitemobs.playerdata.PlayerStatusScreen;
+import com.magmaguy.elitemobs.thirdparty.discordsrv.DiscordSRVAnnouncement;
 import org.bukkit.Bukkit;
 import org.bukkit.WorldCreator;
 import org.bukkit.command.Command;
@@ -76,6 +77,10 @@ public class CommandHandler implements CommandExecutor {
         }
 
         if (args.length == 0) {
+            if (commandSender instanceof Player && DefaultConfig.emLeadsToStatusMenu) {
+                new PlayerStatusScreen((Player) commandSender);
+                return true;
+            }
             validCommands(commandSender);
             return true;
         }
@@ -270,12 +275,15 @@ public class CommandHandler implements CommandExecutor {
             case "rank":
             case "guildrank":
                 if (!userPermCheck("elitemobs.guild.menu", commandSender)) return true;
+                if (AdventurersGuildCommand.adventurersGuildTeleport((Player) commandSender)) {
+                    new AdventurersGuildCommand((Player) commandSender);
+                    return true;
+                }
                 GuildRankMenuHandler guildRankMenuHandler = new GuildRankMenuHandler();
                 GuildRankMenuHandler.initializeGuildRankMenu((Player) commandSender);
                 return true;
             case "trackcustomboss":
-                CustomBossEntity.getCustomBoss(UUID.fromString(args[2]))
-                        .realTimeTracking((Player) commandSender);
+                CustomBossEntity.getCustomBoss(UUID.fromString(args[2])).realTimeTracking((Player) commandSender);
                 return true;
             case "customboss":
                 if (!userPermCheck("elitemobs.customboss", commandSender)) return true;
@@ -290,7 +298,20 @@ public class CommandHandler implements CommandExecutor {
                 return true;
             case "debug":
                 if (!userPermCheck("elitemobs.admin", commandSender)) return true;
-                new CustomBossDebugScreen((Player) commandSender, args);
+                new DebugScreen((Player) commandSender, args);
+                return true;
+            case "discord":
+                if (!userPermCheck("elitemobs.admin", commandSender)) return true;
+                if (args.length < 2) {
+                    commandSender.sendMessage("EliteMobs discord room: https://discord.gg/9f5QSka");
+                    commandSender.sendMessage("If you're trying to send a message via DiscordSRV, the correct commands is /em discord [message]");
+                } else {
+                    StringBuilder message = new StringBuilder();
+                    for (int i = 0; i < args.length; i++)
+                        if (i > 0)
+                            message.append(args[i] + " ");
+                    new DiscordSRVAnnouncement(message.toString());
+                }
                 return true;
             default:
                 validCommands(commandSender);

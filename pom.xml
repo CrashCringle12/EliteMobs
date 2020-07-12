@@ -7,7 +7,7 @@
 
     <groupId>com.magmaguy</groupId>
     <artifactId>EliteMobs</artifactId>
-    <version>7.1.25</version>
+    <version>7.1.31</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -55,8 +55,8 @@
     <repositories>
         <!--Spigot repo-->
         <repository>
-            <id>spigotmc-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
         <!--BStats repo-->
         <repository>
@@ -83,6 +83,12 @@
             <id>codemc-repo</id>
             <url>https://repo.codemc.io/repository/maven-public/</url>
         </repository>
+        <!-- DiscordSRV -->
+        <repository>
+            <id>Scarsz-Nexus</id>
+            <url>https://nexus.scarsz.me/content/groups/public/</url>
+        </repository>
+
     </repositories>
 
     <dependencies>
@@ -127,11 +133,12 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.31.1</version>
         </dependency>
+        <!-- DiscordSRV -->
         <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>18.0.0</version>
-            <scope>compile</scope>
+            <groupId>com.discordsrv</groupId>
+            <artifactId>discordsrv</artifactId>
+            <version>1.19.1</version>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

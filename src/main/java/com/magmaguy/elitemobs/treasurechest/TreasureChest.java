@@ -105,6 +105,14 @@ public class TreasureChest {
         if (location == null)
             return;
 
+        try {
+            location.getChunk().load();
+        } catch (Exception ex) {
+            new WarningMessage("Failed to load location " + location.toString() + " - this location can not be loaded");
+            new WarningMessage("Does the world " + location.getWorld() + " exist? Did the world name change or has the world been removed?");
+            return;
+        }
+
         if (!customTreasureChestConfigFields.getDropStyle().equalsIgnoreCase("single") &&
                 !customTreasureChestConfigFields.getDropStyle().equalsIgnoreCase("group"))
             this.dropStyle = DropStyle.SINGLE;
@@ -126,8 +134,13 @@ public class TreasureChest {
     }
 
     private void generateChest() {
-        if (!location.getWorld().getBlockAt(location).getType().equals(chestMaterial))
-            location.getWorld().getBlockAt(location).setType(chestMaterial);
+        try {
+            if (!location.getWorld().getBlockAt(location).getType().equals(chestMaterial))
+                location.getWorld().getBlockAt(location).setType(chestMaterial);
+        } catch (Exception ex) {
+            new WarningMessage("Custom Treasure Chest " + fileName + " has an invalid location and can not be placed.");
+            return;
+        }
         Chest chest = (Chest) location.getBlock().getState();
         chest.setCustomName(this.key);
         //todo: add block face

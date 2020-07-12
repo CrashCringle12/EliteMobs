@@ -6,6 +6,7 @@ import com.magmaguy.elitemobs.api.EliteMobDeathEvent;
 import com.magmaguy.elitemobs.config.custombosses.CustomBossConfigFields;
 import com.magmaguy.elitemobs.events.mobs.sharedeventproperties.DynamicBossLevelConstructor;
 import com.magmaguy.elitemobs.powers.bosspowers.SpiritWalk;
+import com.magmaguy.elitemobs.thirdparty.discordsrv.DiscordSRVAnnouncement;
 import com.magmaguy.elitemobs.utils.ChunkLocationChecker;
 import com.magmaguy.elitemobs.utils.WarningMessage;
 import org.bukkit.Bukkit;
@@ -22,6 +23,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class RegionalBossEntity implements Listener {
 
@@ -32,6 +34,7 @@ public class RegionalBossEntity implements Listener {
     }
 
     public CustomBossEntity customBossEntity;
+    private final CustomBossConfigFields.ConfigRegionalEntity configRegionalEntity;
     public boolean isAlive;
     private final Location spawnLocation;
     private double leashRadius;
@@ -40,8 +43,9 @@ public class RegionalBossEntity implements Listener {
     private UUID uuid;
     private final CustomBossConfigFields customBossConfigFields;
 
-    public RegionalBossEntity(CustomBossConfigFields customBossConfigFields, Location spawnLocation) {
-        this.spawnLocation = spawnLocation;
+    public RegionalBossEntity(CustomBossConfigFields customBossConfigFields, CustomBossConfigFields.ConfigRegionalEntity configRegionalEntity) {
+        this.configRegionalEntity = configRegionalEntity;
+        this.spawnLocation = configRegionalEntity.spawnLocation;
         this.respawnCooldown = customBossConfigFields.getSpawnCooldown();
         this.customBossConfigFields = customBossConfigFields;
         this.leashRadius = customBossConfigFields.getLeashRadius();
@@ -77,8 +81,13 @@ public class RegionalBossEntity implements Listener {
         if (spawnLocation == null)
             return;
 
-        spawnLocation.getChunk().load();
-
+        try {
+            spawnLocation.getChunk().load();
+        } catch (Exception ex) {
+            new WarningMessage("Failed to load location " + spawnLocation.toString() + " - this location can not be loaded");
+            new WarningMessage("Does the world " + spawnLocation.getWorld() + " exist? Did the world name change or has the world been removed?");
+            return;
+        }
         customBossEntity = new CustomBossEntity(customBossConfigFields, entityType, spawnLocation, mobLevel, ElitePowerParser.parsePowers(customBossConfigFields.getPowers()));
         isAlive = true;
         try {
@@ -112,6 +121,8 @@ public class RegionalBossEntity implements Listener {
 
         }.runTaskLater(MetadataHandler.PLUGIN, respawnCooldown * 20 * 60);
 
+        customBossConfigFields.updateTicksBeforeRespawn(configRegionalEntity.uuid, respawnCooldown);
+
     }
 
     public void setLeashRadius(double radius) {
@@ -142,7 +153,7 @@ public class RegionalBossEntity implements Listener {
                 }
 
                 if (livingEntity.getLocation().distance(spawnLocation) > leashRadius)
-                    SpiritWalk.spiritWalkRegionalBossAnimation((LivingEntity) livingEntity, livingEntity.getLocation(), spawnLocation);
+                    SpiritWalk.spiritWalkRegionalBossAnimation(customBossEntity, livingEntity.getLocation(), spawnLocation);
 
             }
         }.runTaskTimer(MetadataHandler.PLUGIN, 20, 20 * 3);
@@ -165,10 +176,13 @@ public class RegionalBossEntity implements Listener {
                 if (livingEntity == null) return;
                 if (livingEntity.isDead()) return;
                 livingEntity.remove();
+                if (customBossConfigFields.getAnnouncementPriority() < 1) return;
                 if (customBossConfigFields.getEscapeMessage() != null)
                     for (Player player : Bukkit.getOnlinePlayers())
                         if (player.getWorld().equals(livingEntity.getWorld()))
                             player.sendMessage(ChatColorConverter.convert(customBossConfigFields.getEscapeMessage()));
+                if (customBossConfigFields.getAnnouncementPriority() < 3) return;
+                new DiscordSRVAnnouncement(ChatColorConverter.convert(customBossConfigFields.getEscapeMessage()));
 
             }
 
@@ -177,7 +191,7 @@ public class RegionalBossEntity implements Listener {
     }
 
     /**
-     * This may cause issues when bosses wander really far from teh spawn chunk
+     * This may cause issues when bosses wander really far from the spawn chunk
      */
     private void regionalBossWatchdog() {
 
@@ -197,7 +211,7 @@ public class RegionalBossEntity implements Listener {
 
             }
 
-        }.runTaskTimer(MetadataHandler.PLUGIN, 20, 20);
+        }.runTaskTimer(MetadataHandler.PLUGIN, 20, 20 * 30 + ThreadLocalRandom.current().nextInt(31));
     }
 
     public CustomBossConfigFields getCustomBossConfigFields() {

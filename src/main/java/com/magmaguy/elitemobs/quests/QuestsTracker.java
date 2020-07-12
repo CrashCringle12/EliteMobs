@@ -17,7 +17,6 @@ public class QuestsTracker implements Listener {
             if (EliteQuest.hasPlayerQuest(player))
                 if (!EliteQuest.getPlayerQuest(player).getQuestObjective().isTurnedIn())
                     EliteQuest.getPlayerQuest(player).processQuestProgression(event.getEliteMobEntity(), player);
-
     }
 
 }

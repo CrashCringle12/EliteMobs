@@ -23,7 +23,6 @@ import com.magmaguy.elitemobs.utils.ChunkLocationChecker;
 import com.magmaguy.elitemobs.utils.WarningMessage;
 import com.magmaguy.elitemobs.worldguard.WorldGuardCompatibility;
 import com.magmaguy.elitemobs.worldguard.WorldGuardFlagChecker;
-import com.sk89q.worldguard.protection.flags.StateFlag;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -84,6 +83,7 @@ public class EliteMobEntity {
     private boolean inAntiExploitCooldown = false;
 
     private boolean isRegionalBoss = false;
+    private boolean inCombat = false;
 
     /**
      * Check through WorldGuard if the location is valid. Regions flagged with the elitemob-spawning deny tag will cancel
@@ -96,7 +96,7 @@ public class EliteMobEntity {
         if (!EliteMobs.worldguardIsEnabled)
             return true;
         if (!Bukkit.getPluginManager().getPlugin("WorldGuard").isEnabled()) return true;
-        return WorldGuardFlagChecker.checkFlag(location, (StateFlag) WorldGuardCompatibility.getEliteMobsSpawnFlag());
+        return WorldGuardFlagChecker.checkFlag(location, WorldGuardCompatibility.getEliteMobsSpawnFlag());
     }
 
     /**
@@ -453,11 +453,27 @@ public class EliteMobEntity {
     public void damage(double damage) {
         health = health - damage < 0 ? 0 : health - damage;
 
-        if (this.maxHealth <= 2048)
-            livingEntity.setHealth(health);
-        else
-            livingEntity.setHealth(Math.ceil(livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue() * this.health / this.maxHealth));
+        try {
+            if (this.maxHealth <= 2048)
+                livingEntity.setHealth(health);
+            else
+                livingEntity.setHealth(Math.ceil(livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue() * this.health / this.maxHealth));
+        } catch (Exception ex) {
+            new WarningMessage("Failed to correctly damage Elite Mob because some other plugin changed the maximum health of the mob after EliteMobs.");
+            new WarningMessage("This is probably caused by an incompatibility with another plugin.");
+            new WarningMessage("Name of the entity affected: " + getLivingEntity().getCustomName() + " - NOTE: DISABLING THIS ENTITY ON ELITEMOBS WILL NOT FIX THE ISSUE AT ALL");
+            new WarningMessage("Damage will be applied incorrectly for this entity and entities like it until the conflicting plugin is fixed or removed.");
 
+            double errorDamage = livingEntity.getHealth() - damage < 0 ? livingEntity.getHealth() : damage;
+            livingEntity.setHealth(errorDamage);
+            this.health = livingEntity.getHealth();
+            this.maxHealth = livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+        }
+    }
+
+    public void fullHeal() {
+        setHealth(this.maxHealth);
+        damagers.clear();
     }
 
     public double getHealth() {
@@ -879,15 +895,13 @@ public class EliteMobEntity {
     }
 
     public void addDamager(Player player, double damage) {
-        Player oldPlayerInstance = null;
-        for (Player iteratedPlayer : damagers.keySet())
-            if (iteratedPlayer.getUniqueId().equals(player.getUniqueId())) {
-                oldPlayerInstance = iteratedPlayer;
-                this.damagers.put(iteratedPlayer, this.damagers.get(iteratedPlayer) + damage);
-                break;
-            }
-        if (oldPlayerInstance == null)
-            this.damagers.put(player, damage);
+        if (!damagers.isEmpty())
+            for (Player iteratedPlayer : damagers.keySet())
+                if (iteratedPlayer.getUniqueId().equals(player.getUniqueId())) {
+                    this.damagers.put(iteratedPlayer, this.damagers.get(iteratedPlayer) + damage);
+                    return;
+                }
+        this.damagers.put(player, damage);
     }
 
     public boolean hasDamagers() {
@@ -990,6 +1004,14 @@ public class EliteMobEntity {
 
     public void setIsRegionalBoss(boolean isRegionalBoss) {
         this.isRegionalBoss = isRegionalBoss;
+    }
+
+    public void setIsInCombat(boolean inCombat) {
+        this.inCombat = inCombat;
+    }
+
+    public boolean isInCombat() {
+        return this.inCombat;
     }
 
 }

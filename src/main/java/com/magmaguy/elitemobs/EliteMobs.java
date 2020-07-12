@@ -18,6 +18,7 @@ import com.magmaguy.elitemobs.config.mobproperties.MobPropertiesConfig;
 import com.magmaguy.elitemobs.config.npcs.NPCsConfig;
 import com.magmaguy.elitemobs.config.potioneffects.PotionEffectsConfig;
 import com.magmaguy.elitemobs.config.powers.PowersConfig;
+import com.magmaguy.elitemobs.custombosses.RegionalBossEntity;
 import com.magmaguy.elitemobs.custombosses.RegionalBossHandler;
 import com.magmaguy.elitemobs.economy.VaultCompatibility;
 import com.magmaguy.elitemobs.events.EventLauncher;
@@ -30,11 +31,12 @@ import com.magmaguy.elitemobs.items.potioneffects.PotionEffectApplier;
 import com.magmaguy.elitemobs.mobconstructor.mobdata.PluginMobProperties;
 import com.magmaguy.elitemobs.mobscanner.SuperMobScanner;
 import com.magmaguy.elitemobs.npcs.NPCInitializer;
-import com.magmaguy.elitemobs.placeholderapi.Placeholders;
 import com.magmaguy.elitemobs.playerdata.PlayerData;
 import com.magmaguy.elitemobs.powerstances.MajorPowerStanceMath;
 import com.magmaguy.elitemobs.powerstances.MinorPowerStanceMath;
+import com.magmaguy.elitemobs.quests.QuestsMenu;
 import com.magmaguy.elitemobs.runnables.EggRunnable;
+import com.magmaguy.elitemobs.thirdparty.placeholderapi.Placeholders;
 import com.magmaguy.elitemobs.treasurechest.TreasureChest;
 import com.magmaguy.elitemobs.utils.NonSolidBlockTypes;
 import com.magmaguy.elitemobs.versionnotifier.VersionChecker;
@@ -183,13 +185,16 @@ public class EliteMobs extends JavaPlugin {
             worldguardIsEnabled = false;
         }
         if (!worldguardIsEnabled)
-            if (Bukkit.getServer().getPluginManager().getPlugin("WorldGuard") != null)
+            if (Bukkit.getServer().getPluginManager().isPluginEnabled("WorldGuard"))
                 worldguardIsEnabled = true;
 
     }
 
     @Override
     public void onDisable() {
+
+        for (RegionalBossEntity regionalBossEntity : RegionalBossEntity.getRegionalBossEntityList())
+            regionalBossEntity.getCustomBossConfigFields().saveTicksBeforeRespawn();
 
         Bukkit.getServer().getScheduler().cancelTasks(MetadataHandler.PLUGIN);
 
@@ -199,6 +204,7 @@ public class EliteMobs extends JavaPlugin {
         zoneBasedSpawningWorlds.clear();
 
         //save cached data
+        PlayerData.closeConnection();
         Bukkit.getLogger().info("[EliteMobs] Saving EliteMobs databases...");
         Bukkit.getLogger().info("[EliteMobs] All saved! Good night.");
 
@@ -231,6 +237,7 @@ public class EliteMobs extends JavaPlugin {
         MobCombatSettingsConfig.initializeConfig();
         CommandsConfig.initializeConfigs();
         EventsConfig.initializeConfigs();
+        DiscordSRVConfig.initializeConfig();
     }
 
     public static void worldScanner() {
@@ -255,6 +262,7 @@ public class EliteMobs extends JavaPlugin {
             Grid.initializeGrid();
         int eggTimerInterval = 20 * 60 * 10 / DefaultConfig.superMobStackAmount;
         PotionEffectApplier.potionEffectApplier();
+        QuestsMenu.questRefresher();
         if (MobPropertiesConfig.getMobProperties().get(EntityType.CHICKEN).isEnabled() && DefaultConfig.superMobStackAmount > 0) {
             new EggRunnable().runTaskTimer(this, eggTimerInterval, eggTimerInterval);
             if (EnchantmentsConfig.getEnchantment(SoulbindEnchantment.key + ".yml").isEnabled())
