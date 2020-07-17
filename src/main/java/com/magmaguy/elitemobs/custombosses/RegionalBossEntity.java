@@ -114,6 +114,13 @@ public class RegionalBossEntity implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
+                customBossConfigFields.saveTicksBeforeRespawn();
+            }
+        }.runTaskAsynchronously(MetadataHandler.PLUGIN);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
                 inCooldown = false;
                 spawnRegionalBoss();
                 checkLeash();
@@ -183,6 +190,7 @@ public class RegionalBossEntity implements Listener {
                             player.sendMessage(ChatColorConverter.convert(customBossConfigFields.getEscapeMessage()));
                 if (customBossConfigFields.getAnnouncementPriority() < 3) return;
                 new DiscordSRVAnnouncement(ChatColorConverter.convert(customBossConfigFields.getEscapeMessage()));
+                CustomBossEntity.trackableCustomBosses.remove(customBossEntity);
 
             }
 
