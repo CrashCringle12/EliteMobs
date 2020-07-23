@@ -5,14 +5,14 @@ import org.bukkit.entity.EntityType;
 
 import java.util.Arrays;
 
-public class EliteHoglinConfig extends MobPropertiesConfigFields {
-    public EliteHoglinConfig() {
-        super("elite_hoglin",
-                EntityType.HOGLIN,
+public class EliteZoglinConfig extends MobPropertiesConfigFields {
+    public EliteZoglinConfig() {
+        super("elite_zoglin",
+                EntityType.ZOGLIN,
                 true,
-                "&fLvl &2$level &fElite &dHoglin",
+                "&fLvl &2$level &fElite &dZoglin",
                 Arrays.asList("$player &cmessed with the $entity &cand got the horns!",
                         "$entity &cgot $player's &cbacon!"),
-                8);
+                12);
     }
 }

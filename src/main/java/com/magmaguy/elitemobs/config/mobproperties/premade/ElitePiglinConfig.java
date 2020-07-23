@@ -10,8 +10,9 @@ public class ElitePiglinConfig extends MobPropertiesConfigFields {
         super("elite_piglin",
                 EntityType.PIGLIN,
                 true,
-                "&fLvl &2$level &fElite &6Piglin",
-                Arrays.asList("$player &cwas mobbed to death by $entity&c!",
-                        "$entity &cgot $player's &cbacon!"));
+                "&fLvl &2$level &fElite &ePiglin",
+                Arrays.asList("$entity &cwill fetch a good price for $player's remains!",
+                        "$entity &ctaught $player &cthe value of gold!"),
+                13);
     }
 }

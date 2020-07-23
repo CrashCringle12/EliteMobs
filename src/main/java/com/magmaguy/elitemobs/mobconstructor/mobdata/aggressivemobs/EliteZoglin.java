@@ -4,16 +4,16 @@ import com.magmaguy.elitemobs.config.mobproperties.MobPropertiesConfig;
 import com.magmaguy.elitemobs.utils.VersionChecker;
 import org.bukkit.entity.EntityType;
 
-public class EliteHoglin extends EliteMobProperties {
-    public EliteHoglin() {
+public class EliteZoglin extends EliteMobProperties {
+    public EliteZoglin() {
         if (VersionChecker.currentVersionIsUnder(16, 0)) {
             return;
         }
-        this.name = MobPropertiesConfig.getMobProperties().get(EntityType.HOGLIN).getName();
-        this.entityType = EntityType.HOGLIN;
+        this.name = MobPropertiesConfig.getMobProperties().get(EntityType.ZOGLIN).getName();
+        this.entityType = EntityType.ZOGLIN;
+        this.baseDamage = MobPropertiesConfig.getMobProperties().get(EntityType.ZOGLIN).getBaseDamage();
         this.defaultMaxHealth = 40;
-        this.baseDamage = MobPropertiesConfig.getMobProperties().get(EntityType.HOGLIN).getBaseDamage();
-        this.isEnabled = MobPropertiesConfig.getMobProperties().get(EntityType.HOGLIN).isEnabled();
+        this.isEnabled = MobPropertiesConfig.getMobProperties().get(EntityType.ZOGLIN).isEnabled();
         if (this.isEnabled)
             eliteMobData.add(this);
     }

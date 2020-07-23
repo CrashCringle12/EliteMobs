@@ -50,6 +50,7 @@ public class MobPropertiesConfig {
             new EliteWitchConfig(),
             new EliteWitherSkeletonConfig(),
             new EliteZombieConfig(),
+            new EliteGhastConfig(),
             new SuperChickenConfig(),
             new SuperCowConfig(),
             new SuperMushroomCowConfig(),
@@ -60,8 +61,12 @@ public class MobPropertiesConfig {
     ));
 
     public static void initializeConfigs() {
-        if (!VersionChecker.currentVersionIsUnder(16, 0))
+        if (!VersionChecker.currentVersionIsUnder(16, 0)) {
             mobPropertiesConfigFieldsList.add(new EliteZombiefiedPiglin());
+            mobPropertiesConfigFieldsList.add(new EliteZoglinConfig());
+            mobPropertiesConfigFieldsList.add(new ElitePiglinConfig());
+            mobPropertiesConfigFieldsList.add(new EliteHoglinConfig());
+        }
         for (MobPropertiesConfigFields mobPropertiesConfigFields : mobPropertiesConfigFieldsList)
             initializeConfiguration(mobPropertiesConfigFields);
 

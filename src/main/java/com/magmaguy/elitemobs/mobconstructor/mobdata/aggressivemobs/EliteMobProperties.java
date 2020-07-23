@@ -90,6 +90,8 @@ public abstract class EliteMobProperties extends PluginMobProperties {
         new EliteVindicator();
         new ElitePolarBear();
         new EliteRavager();
+        new EliteGhast();
+        new EliteZoglin();
         new ElitePiglin();
         new EliteHoglin();
     }
