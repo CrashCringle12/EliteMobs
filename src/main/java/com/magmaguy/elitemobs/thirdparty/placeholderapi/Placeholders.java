@@ -102,6 +102,8 @@ public class Placeholders extends PlaceholderExpansion {
                 return GuildRank.getRankName(0, GuildRank.getMaxGuildRank(player));
             case "player_money":
                 return "" + EconomyHandler.checkCurrency(player.getUniqueId());
+            case "health_bonus":
+                return "" + GuildRank.getBonusHealth(player, GuildRank.getActiveGuildRank(player), GuildRank.getGuildPrestigeRank(player));
             case "player_top_tier":
                 double highestThreat = 0;
                 for (Player iteratedPlayer : Bukkit.getOnlinePlayers()) {

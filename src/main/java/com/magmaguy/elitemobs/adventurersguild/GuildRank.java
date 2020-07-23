@@ -85,7 +85,10 @@ public class GuildRank {
         double newMaxHealth = 20 + guildRankBonus;
         player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(newMaxHealth);
     }
-
+    public static double getBonusHealth(Player player, int activeGuildRank, int prestigeRank) {
+        double guildRankBonus = healthBonusValue(prestigeRank, activeGuildRank);
+        return guildRankBonus;
+    }
     public static double lootTierValue(int activeGuildRank) {
         return activeGuildRank * 10;
     }
