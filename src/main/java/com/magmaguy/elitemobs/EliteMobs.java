@@ -24,12 +24,12 @@ import com.magmaguy.elitemobs.events.EventLauncher;
 import com.magmaguy.elitemobs.gamemodes.nightmaremodeworld.DaylightWatchdog;
 import com.magmaguy.elitemobs.gamemodes.zoneworld.Grid;
 import com.magmaguy.elitemobs.items.customenchantments.CustomEnchantment;
-import com.magmaguy.elitemobs.items.customenchantments.SoulbindEnchantment;
 import com.magmaguy.elitemobs.items.customitems.CustomItem;
 import com.magmaguy.elitemobs.items.potioneffects.PlayerPotionEffects;
 import com.magmaguy.elitemobs.mobconstructor.mobdata.PluginMobProperties;
 import com.magmaguy.elitemobs.mobscanner.SuperMobScanner;
 import com.magmaguy.elitemobs.npcs.NPCInitializer;
+import com.magmaguy.elitemobs.playerdata.ElitePlayerInventory;
 import com.magmaguy.elitemobs.playerdata.PlayerData;
 import com.magmaguy.elitemobs.powerstances.MajorPowerStanceMath;
 import com.magmaguy.elitemobs.powerstances.MinorPowerStanceMath;
@@ -42,6 +42,8 @@ import com.magmaguy.elitemobs.versionnotifier.VersionChecker;
 import com.magmaguy.elitemobs.versionnotifier.VersionWarner;
 import com.magmaguy.elitemobs.worldguard.WorldGuardCompatibility;
 import com.magmaguy.elitemobs.worlds.CustomWorldLoading;
+import me.clip.placeholderapi.PlaceholderAPI;
+import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -57,6 +59,7 @@ public class EliteMobs extends JavaPlugin {
     public static boolean worldguardIsEnabled = false;
     public static List<World> zoneBasedSpawningWorlds = new ArrayList<>();
     public static List<World> nightmareWorlds = new ArrayList<>();
+    public Object placeholders = null;
 
     @Override
     public void onEnable() {
@@ -105,6 +108,7 @@ public class EliteMobs extends JavaPlugin {
 
         //Launch the local data cache
         PlayerData.initializeDatabaseConnection();
+        ElitePlayerInventory.initialize();
 
         //Get world list
         worldScanner();
@@ -167,7 +171,9 @@ public class EliteMobs extends JavaPlugin {
 
         // Small check to make sure that PlaceholderAPI is installed
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new Placeholders().register();
+            Placeholders placeholders = new Placeholders();
+            placeholders.register();
+            this.placeholders = placeholders;
         }
 
     }
@@ -198,6 +204,9 @@ public class EliteMobs extends JavaPlugin {
 
         validWorldList.clear();
         zoneBasedSpawningWorlds.clear();
+
+        if (this.placeholders != null)
+            PlaceholderAPI.unregisterExpansion((PlaceholderExpansion) this.placeholders);
 
         //save cached data
         PlayerData.closeConnection();
@@ -261,8 +270,6 @@ public class EliteMobs extends JavaPlugin {
         QuestsMenu.questRefresher();
         if (MobPropertiesConfig.getMobProperties().get(EntityType.CHICKEN).isEnabled() && DefaultConfig.superMobStackAmount > 0) {
             new EggRunnable().runTaskTimer(this, eggTimerInterval, eggTimerInterval);
-            if (EnchantmentsConfig.getEnchantment(SoulbindEnchantment.key + ".yml").isEnabled())
-                SoulbindEnchantment.soulbindWatchdog();
         }
     }
 
