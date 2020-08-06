@@ -73,12 +73,16 @@ public class PowersConfig {
             new SummonEmbersConfig(),
             new MeteorShowerConfig(),
             new BulletHellConfig(),
+<<<<<<< HEAD
             new PrimeHellConfig(),
+            new CustomSummonPowerConfig()
+=======
             new CustomSummonPowerConfig(),
             new ArrowFireworksConfig(),
             new ArrowRainConfig(),
             new GroundPoundConfig(),
             new DeathSliceConfig()
+>>>>>>> 8544a4ae142b61a1a7e1ae6b54fa511272204c12
     ));
 
     public static void initializeConfigs() {
