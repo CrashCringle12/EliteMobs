@@ -15,21 +15,21 @@ import org.bukkit.util.Vector;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public class SummonTheReturned extends BossPower implements Listener {
+public class SummonAssistant extends BossPower implements Listener {
 
-    public SummonTheReturned() {
-        super(PowersConfig.getPower("summon_the_returned.yml"));
+    public SummonAssistant() {
+        super(PowersConfig.getPower("summon_assistant.yml"));
     }
 
     @EventHandler
     public void onDamage(EliteMobDamagedByPlayerEvent event) {
         if (event.isCancelled()) return;
-        SummonTheReturned summonTheReturned = (SummonTheReturned) event.getEliteMobEntity().getPower(this);
-        if (summonTheReturned == null) return;
-        if (!eventIsValid(event, summonTheReturned)) return;
+        SummonAssistant summonAssistant = (SummonAssistant) event.getEliteMobEntity().getPower(this);
+        if (summonAssistant == null) return;
+        if (!eventIsValid(event, summonAssistant)) return;
         if (ThreadLocalRandom.current().nextDouble() > 0.25) return;
 
-        summonTheReturned.doCooldown(20 * 20, event.getEliteMobEntity());
+        summonAssistant.doCooldown(20 * 20, event.getEliteMobEntity());
         doSummonParticles(event.getEliteMobEntity());
     }
 
@@ -41,7 +41,7 @@ public class SummonTheReturned extends BossPower implements Listener {
             @Override
             public void run() {
                 counter++;
-                eliteMobEntity.getLivingEntity().getWorld().spawnParticle(Particle.PORTAL,
+                eliteMobEntity.getLivingEntity().getWorld().spawnParticle(Particle.CAMPFIRE_COSY_SMOKE,
                         eliteMobEntity.getLivingEntity().getLocation().add(new Vector(0, 1, 0)), 50, 0.01, 0.01, 0.01, 1);
                 if (counter < 20 * 3) return;
                 cancel();
@@ -54,10 +54,10 @@ public class SummonTheReturned extends BossPower implements Listener {
 
     private void doSummon(EliteMobEntity eliteMobEntity) {
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1; i++) {
             Location spawnLocation = eliteMobEntity.getLivingEntity().getLocation();
 
-            CustomBossEntity customBossEntity = CustomBossEntity.constructCustomBoss("the_returned.yml", spawnLocation, eliteMobEntity.getLevel());
+            CustomBossEntity customBossEntity = CustomBossEntity.constructCustomBoss("pam.yml", spawnLocation, eliteMobEntity.getLevel());
 
             double x = ThreadLocalRandom.current().nextDouble() - 0.5;
             double z = ThreadLocalRandom.current().nextDouble() - 0.5;

@@ -27,13 +27,17 @@ public class PowersConfig {
 
     private static ArrayList<PowersConfigFields> powersConfigFieldsList = new ArrayList(Arrays.asList(
             new FlamePyreConfig(),
+            new WaterPyreConfig(),
             new FlamethrowerConfig(),
             new GoldExplosionConfig(),
+            new PrimeExplosionConfig(),
             new GoldShotgunConfig(),
+            new PrimeShotgunConfig(),
             new HyperLootConfig(),
             new SpiritWalkConfig(),
             new SummonRaugConfig(),
             new SummonTheReturnedConfig(),
+            new SummonAssistantConfig(),
             new InvisibilityConfig(),
             new InvulnerabilityArrowConfig(),
             new InvulnerabilityFallDamageConfig(),
@@ -52,6 +56,7 @@ public class PowersConfig {
             new MovementSpeedConfig(),
             new TauntConfig(),
             new AttackArrowConfig(),
+            new AttackTridentConfig(),
             new AttackBlindingConfig(),
             new AttackConfusingConfig(),
             new AttackFireConfig(),
@@ -68,6 +73,7 @@ public class PowersConfig {
             new SummonEmbersConfig(),
             new MeteorShowerConfig(),
             new BulletHellConfig(),
+            new PrimeHellConfig(),
             new CustomSummonPowerConfig()
     ));
 

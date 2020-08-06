@@ -262,6 +262,7 @@ public class CustomItem {
                         name.equalsIgnoreCase(FlamethrowerEnchantment.key) ||
                         name.equalsIgnoreCase(CriticalStrikesEnchantment.key) ||
                         name.equalsIgnoreCase(MeteorShowerEnchantment.key) ||
+                        name.equalsIgnoreCase(JusticeStormEnchantment.key) ||
                         name.equalsIgnoreCase(SoulbindEnchantment.key) ||
                         name.equalsIgnoreCase(DrillingEnchantment.key) ||
                         name.equalsIgnoreCase(IceBreakerEnchantment.key)) {

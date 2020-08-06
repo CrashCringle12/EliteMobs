@@ -282,6 +282,9 @@ public class SpawnCommand {
                     case "attackarrow":
                         elitePowers.add(new AttackArrow());
                         break;
+                    case "attacktrident":
+                        elitePowers.add(new AttackTrident());
+                        break;
                     case "attackblinding":
                         elitePowers.add(new AttackBlinding());
                         break;

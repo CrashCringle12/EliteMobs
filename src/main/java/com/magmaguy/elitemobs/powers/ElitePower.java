@@ -26,15 +26,19 @@ public class ElitePower {
     private static HashSet<ElitePower> elitePowers = new HashSet(Arrays.asList(
             //Boss powers
             new FlamePyre(),
+            new WaterPyre(),
             new Flamethrower(),
             new GoldExplosion(),
+            new PrimeExplosion(),
             new GoldShotgun(),
+            new PrimeShotgun(),
             new HyperLoot(),
             new SpiritWalk(),
             new SummonRaug(),
-            new SummonTheReturned(),
+            new SummonAssistant(),
             new MeteorShower(),
             new BulletHell(),
+            new PrimeHell(),
             new SummonEmbers(),
 
             //major powers
@@ -62,6 +66,7 @@ public class ElitePower {
 
             //Offensive powers
             new AttackArrow(),
+            new AttackTrident(),
             new AttackBlinding(),
             new AttackConfusing(),
             new AttackFire(),
@@ -114,6 +119,7 @@ public class ElitePower {
 
     private static HashSet<MinorPower> offensivePowers = new HashSet<>(Arrays.asList(
             new AttackArrow(),
+            new AttackTrident(),
             new AttackBlinding(),
             new AttackConfusing(),
             new AttackFire(),

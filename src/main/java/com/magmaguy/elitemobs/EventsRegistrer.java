@@ -144,6 +144,7 @@ public class EventsRegistrer {
         pluginManager.registerEvents(new Corpse(), plugin);
         pluginManager.registerEvents(new Implosion(), plugin);
         pluginManager.registerEvents(new AttackArrow(), plugin);
+        pluginManager.registerEvents(new AttackTrident(), plugin);
         pluginManager.registerEvents(new AttackBlinding(), plugin);
         pluginManager.registerEvents(new AttackFire(), plugin);
         pluginManager.registerEvents(new AttackFireball(), plugin);
@@ -168,18 +169,22 @@ public class EventsRegistrer {
         //boss powers
         pluginManager.registerEvents(new SpiritWalk(), plugin);
         pluginManager.registerEvents(new GoldShotgun(), plugin);
+        pluginManager.registerEvents(new PrimeShotgun(), plugin);
         pluginManager.registerEvents(new GoldExplosion(), plugin);
+        pluginManager.registerEvents(new PrimeExplosion(), plugin);
         pluginManager.registerEvents(new Flamethrower(), plugin);
         if (EnchantmentsConfig.getEnchantment(SoulbindEnchantment.key + ".yml").isEnabled())
             pluginManager.registerEvents(new SoulbindEnchantment.SoulbindEnchantmentEvents(), plugin);
         pluginManager.registerEvents(new FlamePyre(), plugin);
-        pluginManager.registerEvents(new SummonTheReturned(), plugin);
+        pluginManager.registerEvents(new WaterPyre(), plugin);
+        pluginManager.registerEvents(new SummonAssistant(), plugin);
         pluginManager.registerEvents(new HyperLoot(), plugin);
         pluginManager.registerEvents(new SummonRaug(), plugin);
-        pluginManager.registerEvents(new SummonTheReturned(), plugin);
+        pluginManager.registerEvents(new SummonAssistant(), plugin);
         pluginManager.registerEvents(new SummonEmbers(), plugin);
         pluginManager.registerEvents(new MeteorShower(), plugin);
         pluginManager.registerEvents(new BulletHell(), plugin);
+        pluginManager.registerEvents(new PrimeHell(), plugin);
         pluginManager.registerEvents(new CustomSummonPower.CustomSummonPowerEvent(), plugin);
 
         //Custom bosses
@@ -267,6 +272,7 @@ public class EventsRegistrer {
         //Initialize items from custom events
         pluginManager.registerEvents(new FlamethrowerEnchantment.FlamethrowerEnchantmentEvents(), plugin);
         pluginManager.registerEvents(new MeteorShowerEnchantment.MeteorShowerEvents(), plugin);
+        pluginManager.registerEvents(new JusticeStormEnchantment.StormJusticeEvents(), plugin);
         pluginManager.registerEvents(new DrillingEnchantment(), plugin);
         pluginManager.registerEvents(new IceBreakerEnchantment.IceBreakerEnchantmentEvent(), plugin);
 

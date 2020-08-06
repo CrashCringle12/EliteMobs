@@ -79,6 +79,7 @@ public class EnchantmentsConfig {
             new SoulbindConfig(),
             new CriticalStrikesConfig(),
             new MeteorShowerConfig(),
+            new JusticeStormConfig(),
             new DrillingConfig(),
             new IceBreakerConfig()
     ));
