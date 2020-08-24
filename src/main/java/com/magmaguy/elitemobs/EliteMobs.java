@@ -49,6 +49,7 @@ import com.magmaguy.elitemobs.worlds.CustomWorldLoading;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
@@ -213,6 +214,8 @@ public class EliteMobs extends JavaPlugin {
 
         if (this.placeholders != null)
             ((Placeholders) placeholders).unregister();
+
+        HandlerList.unregisterAll(MetadataHandler.PLUGIN);
 
         //save cached data
         PlayerData.closeConnection();
