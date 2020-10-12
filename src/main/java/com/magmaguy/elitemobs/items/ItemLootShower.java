@@ -61,10 +61,12 @@ public class ItemLootShower implements Listener {
             }.runTaskLater(MetadataHandler.PLUGIN, 20 * 60 * 5);
 
             new BukkitRunnable() {
+                int counter = 0;
+
                 @Override
                 public void run() {
 
-                    if (!item.isValid() || !player.isValid() || !player.getWorld().equals(item.getWorld())) {
+                    if (!item.isValid() || !player.isValid() || !player.getWorld().equals(item.getWorld()) || counter > 20 * 4 || item.getLocation().distance(player.getLocation()) > 30) {
                         cancel();
                         pickupable = true;
                         item.setGravity(true);
@@ -94,6 +96,7 @@ public class ItemLootShower implements Listener {
                         return;
                     }
 
+                    counter++;
                 }
             }.runTaskTimer(MetadataHandler.PLUGIN, 1, 1);
         }
@@ -322,30 +325,32 @@ public class ItemLootShower implements Listener {
             //coins are soulbound so if someone can pick them up they can have it
             if (!coinValues.containsKey(event.getItem().getUniqueId())) return;
             event.setCancelled(true);
+
             Coin coin = coinValues.get(event.getItem().getUniqueId());
             if (!coin.pickupable)
                 return;
-            coinValues.remove(event.getItem().getUniqueId());
 
-            Player player = event.getPlayer();
+            //if (event.getEntity() instanceof Player) {
+                coinValues.remove(event.getItem().getUniqueId());
             double amountIncremented = coin.value;
-            event.getItem().remove();
-            EconomyHandler.addCurrency(player.getUniqueId(), amountIncremented);
-            sendCurrencyNotification(player);
+            Player player = event.getPlayer();
+                event.getItem().remove();
+                EconomyHandler.addCurrency(player.getUniqueId(), amountIncremented);
+                sendCurrencyNotification(player);
 
-            //cache for counting how much coin they're getting over a short amount of time
-            if (playerCurrencyPickup.containsKey(player))
-                playerCurrencyPickup.put(player, playerCurrencyPickup.get(player) + amountIncremented);
-            else
-                playerCurrencyPickup.put(player, amountIncremented);
+                //cache for counting how much coin they're getting over a short amount of time
+                if (playerCurrencyPickup.containsKey(player))
+                    playerCurrencyPickup.put(player, playerCurrencyPickup.get(player) + amountIncremented);
+                else
+                    playerCurrencyPickup.put(player, amountIncremented);
 
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
-                    TextComponent.fromLegacyText(
-                            ChatColorConverter.convert(EconomySettingsConfig.actionBarCurrencyShowerMessage
-                                    .replace("$currency_name", EconomySettingsConfig.currencyName)
-                                    .replace("$amount", Round.twoDecimalPlaces(playerCurrencyPickup.get(player)) + ""))));
-
-        }
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
+                        TextComponent.fromLegacyText(
+                                ChatColorConverter.convert(EconomySettingsConfig.actionBarCurrencyShowerMessage
+                                        .replace("$currency_name", EconomySettingsConfig.currencyName)
+                                        .replace("$amount", Round.twoDecimalPlaces(playerCurrencyPickup.get(player)) + ""))));
+            }
+        //}
     }
 
 

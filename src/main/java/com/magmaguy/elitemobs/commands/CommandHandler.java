@@ -169,15 +169,15 @@ public class CommandHandler implements CommandExecutor {
             if (silentPermCheck(KILLALL_SPECIFICENTITY, commandSender))
                 player.sendMessage("§2/EliteMobs kill [entityType] [radius]");
             if (silentPermCheck(SHOP, commandSender))
-                player.sendMessage("§2§2/EliteMobs shop");
+                player.sendMessage("§2/EliteMobs shop");
             if (silentPermCheck(CUSTOMSHOP, commandSender))
                 player.sendMessage("§2/EliteMobs customshop");
             if (silentPermCheck(CURRENCY_PAY, commandSender))
-                player.sendMessage("§2§2/EliteMobs pay §a<username>");
+                player.sendMessage("§2/EliteMobs pay §a<username>");
             if (silentPermCheck(CURRENCY_ADD, commandSender))
-                player.sendMessage("§2§2/EliteMobs add §a<username>");
+                player.sendMessage("§2/EliteMobs add §a<username>");
             if (silentPermCheck(CURRENCY_SUBTRACT, commandSender))
-                player.sendMessage("§2§2/EliteMobs subtract §a<username>");
+                player.sendMessage("§2/EliteMobs subtract §a<username>");
             if (silentPermCheck(CURRENCY_SET, commandSender))
                 player.sendMessage("§2/EliteMobs set [username]");
             if (silentPermCheck(CURRENCY_WALLET, commandSender))
@@ -216,6 +216,8 @@ public class CommandHandler implements CommandExecutor {
             }
             if (silentPermCheck(SET_RANK, commandSender))
                 commandSender.sendMessage("§2/EliteMobs setrank [player] [prestigeTier] [guildTier]");
+            if (silentPermCheck("elitemobs.*", commandSender))
+                commandSender.sendMessage("&aNeed help?  &9https://discord.gg/9f5QSka (only people with OP or elitemobs.* can see this)");
 
 
         } else if (commandSender instanceof ConsoleCommandSender) {
