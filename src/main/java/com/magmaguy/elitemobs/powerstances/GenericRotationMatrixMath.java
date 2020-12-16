@@ -1,5 +1,6 @@
 package com.magmaguy.elitemobs.powerstances;
 
+import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
 import static java.lang.Math.*;
@@ -45,10 +46,6 @@ public class GenericRotationMatrixMath {
         it easier to predict where things are supposed to be.
     */
 
-    //TODO: register points in hashmap <int, List<Location>>
-    private static Vector newVector;
-    private static double newX, newY, newZ;
-
     public static Vector applyRotation(double a, double b, double c, double numberOfPointsPerFullRotation, double x, double y, double z, int counter) {
 
         double theta;
@@ -58,15 +55,37 @@ public class GenericRotationMatrixMath {
         //Get the next rotation
         theta = theta + theta * counter;
 
-        newX = x * (cos(theta) + (1 - cos(theta)) * pow(a, 2)) + y * ((1 - cos(theta)) * a * b + (sin(theta)) * c) + z * ((1 - cos(theta)) * a * c - (sin(theta)) * b);
-        newY = x * ((1 - cos(theta)) * b * a - (sin(theta)) * c) + y * (cos(theta) + (1 - cos(theta)) * pow(b, 2)) + z * ((1 - cos(theta)) * b * c + (sin(theta)) * a);
-        newZ = x * ((1 - cos(theta)) * c * a + (sin(theta)) * b) + y * ((1 - cos(theta)) * c * b - (sin(theta)) * a) + z * (cos(theta) + (1 - cos(theta)) * pow(c, 2));
+        double newX = x * (cos(theta) + (1 - cos(theta)) * pow(a, 2)) + y * ((1 - cos(theta)) * a * b + (sin(theta)) * c) + z * ((1 - cos(theta)) * a * c - (sin(theta)) * b);
+        double newY = x * ((1 - cos(theta)) * b * a - (sin(theta)) * c) + y * (cos(theta) + (1 - cos(theta)) * pow(b, 2)) + z * ((1 - cos(theta)) * b * c + (sin(theta)) * a);
+        double newZ = x * ((1 - cos(theta)) * c * a + (sin(theta)) * b) + y * ((1 - cos(theta)) * c * b - (sin(theta)) * a) + z * (cos(theta) + (1 - cos(theta)) * pow(c, 2));
 
         //adjust rotated point
-        newVector = new Vector(newX, newY, newZ);
+        Vector newVector = new Vector(newX, newY, newZ);
 
         return newVector;
 
+    }
+
+    private static Vector rotateSpecificLocation(double a, double b, double c, double theta, Vector relativeLocation) {
+        double x = relativeLocation.getX();
+        double y = relativeLocation.getY();
+        double z = relativeLocation.getZ();
+        //Convert radian to degree
+        theta *= PI / 180;
+
+        double newX = x * (cos(theta) + (1 - cos(theta)) * pow(a, 2)) + y * ((1 - cos(theta)) * a * b + (sin(theta)) * c) + z * ((1 - cos(theta)) * a * c - (sin(theta)) * b);
+        double newY = x * ((1 - cos(theta)) * b * a - (sin(theta)) * c) + y * (cos(theta) + (1 - cos(theta)) * pow(b, 2)) + z * ((1 - cos(theta)) * b * c + (sin(theta)) * a);
+        double newZ = x * ((1 - cos(theta)) * c * a + (sin(theta)) * b) + y * ((1 - cos(theta)) * c * b - (sin(theta)) * a) + z * (cos(theta) + (1 - cos(theta)) * pow(c, 2));
+
+        return new Vector(newX, newY, newZ);
+    }
+
+    public static Location rotateLocationYAxis(double rotationAngleInDegrees, Location anchorPoint, Vector relativeLocation) {
+        return anchorPoint.clone().add(rotateSpecificLocation(0, 1, 0, rotationAngleInDegrees, relativeLocation));
+    }
+
+    public static Vector rotateVectorYAxis(double rotationAngleInDegrees, Location anchorPoint, Vector relativeLocation) {
+        return rotateLocationYAxis(rotationAngleInDegrees, anchorPoint, relativeLocation).toVector();
     }
 
 }

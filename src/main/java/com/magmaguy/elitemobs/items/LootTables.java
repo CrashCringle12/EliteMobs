@@ -10,6 +10,7 @@ import com.magmaguy.elitemobs.items.customenchantments.SoulbindEnchantment;
 import com.magmaguy.elitemobs.items.customitems.CustomItem;
 import com.magmaguy.elitemobs.items.itemconstructor.ItemConstructor;
 import com.magmaguy.elitemobs.mobconstructor.EliteMobEntity;
+import com.magmaguy.elitemobs.utils.DebugMessage;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
@@ -67,9 +68,9 @@ public class LootTables implements Listener {
                         }
                     }.runTaskLater(MetadataHandler.PLUGIN, 20 * 10);
                 }
-                item = generateLoot((int) Math.floor(itemTier), eliteMobEntity);
+                item = generateLoot((int) Math.floor(itemTier), eliteMobEntity, player);
             } else
-                item = generateLoot(eliteMobEntity);
+                item = generateLoot(eliteMobEntity, player);
 
             if (item != null &&
                     item.getItemStack() != null &&
@@ -79,7 +80,7 @@ public class LootTables implements Listener {
                 item.setCustomNameVisible(true);
             }
 
-            SoulbindEnchantment.addEnchantment(item, player);
+            SoulbindEnchantment.addPhysicalDisplay(item, player);
 
             if (item == null) return;
 
@@ -94,7 +95,7 @@ public class LootTables implements Listener {
     private static final boolean limitedItemsExist = CustomItem.getLimitedItem() != null && !CustomItem.getLimitedItem().isEmpty();
     private static final boolean scalableItemsExist = CustomItem.getScalableItems() != null && !CustomItem.getScalableItems().isEmpty();
 
-    private static Item generateLoot(EliteMobEntity eliteMobEntity) {
+    private static Item generateLoot(EliteMobEntity eliteMobEntity, Player player) {
 
         int mobTier = (int) MobTierCalculator.findMobTier(eliteMobEntity);
 
@@ -103,11 +104,11 @@ public class LootTables implements Listener {
          */
         int itemTier = (int) setItemTier(mobTier);
 
-        return generateLoot(itemTier, eliteMobEntity);
+        return generateLoot(itemTier, eliteMobEntity, player);
 
     }
 
-    private static Item generateLoot(int itemTier, EliteMobEntity eliteMobEntity) {
+    public static Item generateLoot(int itemTier, EliteMobEntity eliteMobEntity, Player player) {
 
          /*
         Handle the odds of an item dropping
@@ -137,15 +138,68 @@ public class LootTables implements Listener {
 
         switch (selectedLootSystem) {
             case "procedural":
-                return dropProcedurallyGeneratedItem(itemTier, eliteMobEntity);
+                return dropProcedurallyGeneratedItem(itemTier, eliteMobEntity, player);
             case "weighed":
-                return dropWeighedFixedItem(eliteMobEntity.getLivingEntity().getLocation());
+                return dropWeighedFixedItem(eliteMobEntity.getLivingEntity().getLocation(), player);
             case "fixed":
-                return dropFixedItem(eliteMobEntity, itemTier);
+                return dropFixedItem(eliteMobEntity.getLivingEntity().getLocation(), itemTier, player);
             case "limited":
-                return dropLimitedItem(eliteMobEntity, itemTier);
+                return dropLimitedItem(eliteMobEntity.getLivingEntity().getLocation(), itemTier, player);
             case "scalable":
-                return dropScalableItem(eliteMobEntity, itemTier);
+                return dropScalableItem(eliteMobEntity.getLivingEntity().getLocation(), itemTier, player);
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Used for "fake" drops. Currently this means it's used by the SimLootHandler, reason will default to shop.
+     *
+     * @param itemTier
+     * @param location
+     * @param player
+     * @return
+     */
+    public static Item generateLoot(int itemTier, Location location, Player player) {
+
+         /*
+        Handle the odds of an item dropping
+         */
+        double baseChance = ItemSettingsConfig.flatDropRate;
+        double dropChanceBonus = ItemSettingsConfig.tierIncreaseDropRate * itemTier;
+
+        if (ThreadLocalRandom.current().nextDouble() > baseChance + dropChanceBonus)
+            return null;
+
+        HashMap<String, Double> weightedProbability = new HashMap<>();
+        if (proceduralItemsOn)
+            weightedProbability.put("procedural", ItemSettingsConfig.proceduralItemWeight);
+        if (customItemsOn) {
+            if (weighedItemsExist)
+                weightedProbability.put("weighed", ItemSettingsConfig.weighedItemWeight);
+            if (fixedItemsExist)
+                if (CustomItem.getFixedItems().containsKey(itemTier))
+                    weightedProbability.put("fixed", ItemSettingsConfig.fixedItemWeight);
+            if (limitedItemsExist)
+                weightedProbability.put("limited", ItemSettingsConfig.limitedItemWeight);
+            if (scalableItemsExist)
+                weightedProbability.put("scalable", ItemSettingsConfig.scalableItemWeight);
+        }
+
+        String selectedLootSystem = pickWeighedProbability(weightedProbability);
+
+        switch (selectedLootSystem) {
+            case "procedural":
+                return dropProcedurallyGeneratedItem(itemTier, location, player);
+            case "weighed":
+                return dropWeighedFixedItem(location, player);
+            case "fixed":
+                return dropFixedItem(location, itemTier, player);
+            case "limited":
+                return dropLimitedItem(location, itemTier, player);
+            case "scalable":
+                return dropScalableItem(location, itemTier, player);
         }
 
         return null;
@@ -180,12 +234,22 @@ public class LootTables implements Listener {
     }
 
 
-    private static Item dropWeighedFixedItem(Location location) {
+    private static Item dropWeighedFixedItem(Location location, Player player) {
 
         double totalWeight = 0;
 
+
         for (ItemStack itemStack : CustomItem.getWeighedFixedItems().keySet())
-            totalWeight += CustomItem.getWeighedFixedItems().get(itemStack);
+            try {
+                totalWeight += CustomItem.getWeighedFixedItems().get(itemStack);
+            } catch (NullPointerException ex) {
+                new DebugMessage("Error generating loot");
+                if (itemStack != null)
+                    new DebugMessage("itemStack is " + itemStack.getItemMeta().getDisplayName());
+                new DebugMessage("Weight value is null: " + (CustomItem.getWeighedFixedItems().get(itemStack) == null));
+                ex.printStackTrace();
+            }
+
 
         ItemStack generatedItemStack = null;
         double random = Math.random() * totalWeight;
@@ -198,36 +262,32 @@ public class LootTables implements Listener {
             }
         }
 
+        SoulbindEnchantment.addEnchantment(generatedItemStack, player);
+
         return location.getWorld().dropItem(location, generatedItemStack);
 
     }
 
-    private static Item dropProcedurallyGeneratedItem(int tierLevel, EliteMobEntity eliteMobEntity) {
-
-        ItemStack randomLoot = ItemConstructor.constructItem(tierLevel, eliteMobEntity);
+    private static Item dropProcedurallyGeneratedItem(int tierLevel, EliteMobEntity eliteMobEntity, Player player) {
+        ItemStack randomLoot = ItemConstructor.constructItem(tierLevel, eliteMobEntity, player, false);
         return eliteMobEntity.getLivingEntity().getWorld().dropItem(eliteMobEntity.getLivingEntity().getLocation(), randomLoot);
-
     }
 
-    private static Item dropScalableItem(EliteMobEntity eliteMobEntity, int itemTier) {
-
-        return eliteMobEntity.getLivingEntity().getWorld().dropItem(eliteMobEntity.getLivingEntity().getLocation(),
-                ScalableItemConstructor.randomizeScalableItem(itemTier));
-
+    private static Item dropProcedurallyGeneratedItem(int tierLevel, Location location, Player player) {
+        ItemStack randomLoot = ItemConstructor.constructItem(tierLevel, null, player, false);
+        return location.getWorld().dropItem(location, randomLoot);
     }
 
-    private static Item dropLimitedItem(EliteMobEntity eliteMobEntity, int itemTier) {
-
-        return eliteMobEntity.getLivingEntity().getWorld().dropItem(eliteMobEntity.getLivingEntity().getLocation(),
-                ScalableItemConstructor.randomizeLimitedItem(itemTier));
-
+    private static Item dropScalableItem(Location location, int itemTier, Player player) {
+        return location.getWorld().dropItem(location, ScalableItemConstructor.randomizeScalableItem(itemTier, player));
     }
 
-    private static Item dropFixedItem(EliteMobEntity eliteMobEntity, int itemTier) {
+    private static Item dropLimitedItem(Location location, int itemTier, Player player) {
+        return location.getWorld().dropItem(location, ScalableItemConstructor.randomizeLimitedItem(itemTier, player));
+    }
 
-        return eliteMobEntity.getLivingEntity().getWorld().dropItem(eliteMobEntity.getLivingEntity().getLocation(),
-                CustomItem.getFixedItems().get(itemTier).get(ThreadLocalRandom.current().nextInt(CustomItem.getFixedItems().get(itemTier).size())).generateDefaultsItemStack());
-
+    private static Item dropFixedItem(Location location, int itemTier, Player player) {
+        return location.getWorld().dropItem(location, CustomItem.getFixedItems().get(itemTier).get(ThreadLocalRandom.current().nextInt(CustomItem.getFixedItems().get(itemTier).size())).generateDefaultsItemStack(player, false));
     }
 
 }

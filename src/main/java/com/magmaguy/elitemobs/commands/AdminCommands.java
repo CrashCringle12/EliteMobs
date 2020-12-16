@@ -1,11 +1,17 @@
 package com.magmaguy.elitemobs.commands;
 
+import com.magmaguy.elitemobs.ChatColorConverter;
 import com.magmaguy.elitemobs.commands.admin.DebugScreen;
 import com.magmaguy.elitemobs.commands.admin.StatsCommand;
 import com.magmaguy.elitemobs.commands.admin.npc.NPCCommands;
+import com.magmaguy.elitemobs.dungeons.Minidungeon;
+import com.magmaguy.elitemobs.items.ItemTagger;
+import com.magmaguy.elitemobs.items.customenchantments.SoulbindEnchantment;
 import com.magmaguy.elitemobs.thirdparty.discordsrv.DiscordSRVAnnouncement;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class AdminCommands {
 
@@ -89,7 +95,7 @@ public class AdminCommands {
             case "simulatedrop":
                 if (commandSender instanceof Player) {
                     if (CommandHandler.userPermCheck(CommandHandler.SIMLOOT, commandSender))
-                        SimLootHandler.simLoot((Player) commandSender, Integer.parseInt(args[1]));
+                        SimLootHandler.simLoot((Player) commandSender, Integer.parseInt(args[1]), args.length == 3 ? Integer.parseInt(args[2]) : 0);
                 } else if (CommandHandler.permCheck(CommandHandler.SIMLOOT, commandSender))
                     SimLootHandler.simLoot(commandSender, args);
                 return true;
@@ -157,6 +163,29 @@ public class AdminCommands {
                         if (i > 0)
                             message.append(args[i] + " ");
                     new DiscordSRVAnnouncement(message.toString());
+                }
+                return true;
+
+            case "unbind":
+                if (CommandHandler.userPermCheck("elitemobs.*", commandSender)) {
+                    Player player = (Player) commandSender;
+                    ItemStack itemStack = player.getInventory().getItemInMainHand();
+                    if (ItemTagger.isEliteItem(itemStack))
+                        SoulbindEnchantment.removeEnchantment(itemStack);
+                }
+                return true;
+
+            case "relativecoord":
+                if (CommandHandler.userPermCheck("elitemobs.*", commandSender)) {
+                    Minidungeon minidungeon = Minidungeon.minidungeons.get(args[1]);
+                    Location anchorpoint = minidungeon.dungeonPackagerConfigFields.getAnchorPoint();
+                    Player player = (Player) commandSender;
+                    String relativePosition = player.getLocation().clone().subtract(anchorpoint).getBlockX() + ", "
+                            + player.getLocation().clone().subtract(anchorpoint).getBlockY() + ", "
+                            + player.getLocation().clone().subtract(anchorpoint).getBlockZ();
+                    player.sendMessage(ChatColorConverter.convert(
+                            "[EliteMobs] Relative position to anchor point of " + minidungeon.dungeonPackagerConfigFields.getName() + ": " + relativePosition));
+
                 }
                 return true;
 

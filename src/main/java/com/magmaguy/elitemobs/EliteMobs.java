@@ -12,6 +12,7 @@ import com.magmaguy.elitemobs.config.custombosses.CustomBossConfigFields;
 import com.magmaguy.elitemobs.config.custombosses.CustomBossesConfig;
 import com.magmaguy.elitemobs.config.customloot.CustomLootConfig;
 import com.magmaguy.elitemobs.config.customtreasurechests.CustomTreasureChestsConfig;
+import com.magmaguy.elitemobs.config.dungeonpackager.DungeonPackagerConfig;
 import com.magmaguy.elitemobs.config.enchantments.EnchantmentsConfig;
 import com.magmaguy.elitemobs.config.events.EventsConfig;
 import com.magmaguy.elitemobs.config.menus.MenusConfig;
@@ -19,6 +20,7 @@ import com.magmaguy.elitemobs.config.mobproperties.MobPropertiesConfig;
 import com.magmaguy.elitemobs.config.npcs.NPCsConfig;
 import com.magmaguy.elitemobs.config.potioneffects.PotionEffectsConfig;
 import com.magmaguy.elitemobs.config.powers.PowersConfig;
+import com.magmaguy.elitemobs.dungeons.Minidungeon;
 import com.magmaguy.elitemobs.economy.VaultCompatibility;
 import com.magmaguy.elitemobs.events.EventLauncher;
 import com.magmaguy.elitemobs.gamemodes.nightmaremodeworld.DaylightWatchdog;
@@ -39,6 +41,7 @@ import com.magmaguy.elitemobs.playerdata.PlayerData;
 import com.magmaguy.elitemobs.powerstances.MajorPowerStanceMath;
 import com.magmaguy.elitemobs.powerstances.MinorPowerStanceMath;
 import com.magmaguy.elitemobs.quests.QuestsMenu;
+import com.magmaguy.elitemobs.thirdparty.bstats.CustomCharts;
 import com.magmaguy.elitemobs.thirdparty.placeholderapi.Placeholders;
 import com.magmaguy.elitemobs.thirdparty.worldguard.WorldGuardCompatibility;
 import com.magmaguy.elitemobs.treasurechest.TreasureChest;
@@ -46,6 +49,7 @@ import com.magmaguy.elitemobs.utils.NonSolidBlockTypes;
 import com.magmaguy.elitemobs.versionnotifier.VersionChecker;
 import com.magmaguy.elitemobs.versionnotifier.VersionWarner;
 import com.magmaguy.elitemobs.worlds.CustomWorldLoading;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
@@ -62,12 +66,13 @@ public class EliteMobs extends JavaPlugin {
     public static List<World> zoneBasedSpawningWorlds = new ArrayList<>();
     public static List<World> nightmareWorlds = new ArrayList<>();
     public Object placeholders = null;
+    public static Metrics metrics;
 
     @Override
     public void onEnable() {
 
         //Enable stats
-       // Metrics metrics = new Metrics(this);
+        Metrics metrics = new Metrics(this);
 
         Bukkit.getLogger().info(" _____ _     _____ _____ ________  ______________  _____");
         Bukkit.getLogger().info("|  ___| |   |_   _|_   _|  ___|  \\/  |  _  | ___ \\/  ___|");
@@ -178,6 +183,11 @@ public class EliteMobs extends JavaPlugin {
             this.placeholders = placeholders;
         }
 
+        //Enable stats
+        metrics = new Metrics(this, 1081);
+        //Initialize custom charts
+        new CustomCharts();
+
     }
 
     @Override
@@ -211,6 +221,8 @@ public class EliteMobs extends JavaPlugin {
         CustomBossEntity.getCustomBosses().clear();
         CustomBossConfigFields.getRegionalElites().clear();
         CustomBossConfigFields.getNaturallySpawnedElites().clear();
+        CustomEnchantment.getCustomEnchantments().clear();
+        Minidungeon.minidungeons.clear();
 
         if (this.placeholders != null)
             ((Placeholders) placeholders).unregister();
@@ -252,6 +264,11 @@ public class EliteMobs extends JavaPlugin {
         CommandsConfig.initializeConfigs();
         EventsConfig.initializeConfigs();
         DiscordSRVConfig.initializeConfig();
+        /*
+        Spawn world bosses
+         */
+        RegionalBossHandler.initialize();
+        DungeonPackagerConfig.initializeConfigs();
     }
 
     public static void worldScanner() {

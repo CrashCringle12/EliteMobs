@@ -1,6 +1,9 @@
 package com.magmaguy.elitemobs.npcs;
 
+import com.magmaguy.elitemobs.ChatColorConverter;
 import com.magmaguy.elitemobs.MetadataHandler;
+import com.magmaguy.elitemobs.config.ConfigValues;
+import com.magmaguy.elitemobs.config.TranslationConfig;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -9,7 +12,7 @@ import java.util.HashSet;
 
 public class NPCWorkingHours {
 
-    private static HashSet<NPCEntity> sleepEnabledNPCs = new HashSet<>();
+    private static final HashSet<NPCEntity> sleepEnabledNPCs = new HashSet<>();
 
     public static HashSet<NPCEntity> getSleepEnabledNPCs() {
         return sleepEnabledNPCs;
@@ -30,7 +33,7 @@ public class NPCWorkingHours {
                         npcEntity.getVillager().addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 12000, 1));
 
                         if (!npcEntity.getIsSleeping()) {
-                            npcEntity.setTempRole("<Sleeping>");
+                            npcEntity.setTempRole(ChatColorConverter.convert(ConfigValues.translationConfig.getString(TranslationConfig.NPC_SLEEPING_MESSAGE)));
                             npcEntity.setIsSleeping(true);
                         }
 

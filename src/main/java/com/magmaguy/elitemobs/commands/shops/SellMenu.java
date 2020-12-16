@@ -8,6 +8,7 @@ import com.magmaguy.elitemobs.config.TranslationConfig;
 import com.magmaguy.elitemobs.config.menus.premade.SellMenuConfig;
 import com.magmaguy.elitemobs.economy.EconomyHandler;
 import com.magmaguy.elitemobs.items.ItemWorthCalculator;
+import com.magmaguy.elitemobs.items.customenchantments.SoulbindEnchantment;
 import com.magmaguy.elitemobs.utils.ItemStackGenerator;
 import com.magmaguy.elitemobs.utils.ObfuscatedStringHandler;
 import org.bukkit.Bukkit;
@@ -102,7 +103,7 @@ public class SellMenu implements Listener {
                 for (ItemStack itemStack : event.getClickedInventory()) {
                     if (validSlots.contains(positionCounter))
                         if (itemStack != null) {
-                            double amountDeduced = ItemWorthCalculator.determineResaleWorth(itemStack) * itemStack.getAmount();
+                            double amountDeduced = ItemWorthCalculator.determineResaleWorth(itemStack, Bukkit.getPlayer(event.getWhoClicked().getUniqueId())) * itemStack.getAmount();
                             EconomyHandler.addCurrency(event.getWhoClicked().getUniqueId(), amountDeduced);
                             event.getWhoClicked().sendMessage(
                                     ChatColorConverter.convert(
@@ -149,7 +150,7 @@ public class SellMenu implements Listener {
                 for (ItemStack itemStack : event.getInventory()) {
                     if (validSlots.contains(positionCounter))
                         if (itemStack != null)
-                            itemWorth += ItemWorthCalculator.determineResaleWorth(itemStack) * itemStack.getAmount();
+                            itemWorth += ItemWorthCalculator.determineResaleWorth(itemStack, Bukkit.getPlayer(event.getWhoClicked().getUniqueId())) * itemStack.getAmount();
                     positionCounter++;
                 }
 
@@ -173,6 +174,11 @@ public class SellMenu implements Listener {
             return;
         }
 
+        if (!SoulbindEnchantment.isValidSoulbindUser(event.getCurrentItem().getItemMeta(), (Player) event.getWhoClicked())) {
+            event.getWhoClicked().sendMessage(ChatColorConverter.convert(ConfigValues.translationConfig.getString(TranslationConfig.SHOP_SALE_OTHERS_ITEMS)));
+            return;
+        }
+
         boolean inventoryIsFull = true;
         for (int i : validSlots)
             if (event.getInventory().getItem(i) == null) {
@@ -189,7 +195,7 @@ public class SellMenu implements Listener {
         for (ItemStack itemStack : event.getInventory()) {
             if (validSlots.contains(positionCounter))
                 if (itemStack != null)
-                    itemWorth += ItemWorthCalculator.determineResaleWorth(itemStack) * itemStack.getAmount();
+                    itemWorth += ItemWorthCalculator.determineResaleWorth(itemStack, Bukkit.getPlayer(event.getWhoClicked().getUniqueId())) * itemStack.getAmount();
             positionCounter++;
         }
 

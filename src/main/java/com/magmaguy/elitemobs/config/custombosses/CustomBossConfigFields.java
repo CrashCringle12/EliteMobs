@@ -2,6 +2,7 @@ package com.magmaguy.elitemobs.config.custombosses;
 
 import com.magmaguy.elitemobs.MetadataHandler;
 import com.magmaguy.elitemobs.config.ConfigurationEngine;
+import com.magmaguy.elitemobs.mobconstructor.custombosses.RegionalBossEntity;
 import com.magmaguy.elitemobs.utils.ConfigurationLocation;
 import com.magmaguy.elitemobs.utils.ItemStackGenerator;
 import com.magmaguy.elitemobs.utils.WarningMessage;
@@ -51,7 +52,7 @@ public class CustomBossConfigFields {
     private ItemStack boots = null;
     private ItemStack mainHand = null;
     private ItemStack offHand = null;
-    private boolean isBaby;
+    private boolean isBaby = false;
     private final List<String> powers;
     private final String spawnMessage;
     private final String deathMessage;
@@ -357,7 +358,7 @@ public class CustomBossConfigFields {
                         new WarningMessage("Warning: file " + fileName + " has an invalid location " + string);
                     if (string.contains(":"))
                         respawnTime = Long.parseLong(string.substring(string.indexOf(":") + 1));
-                    ConfigRegionalEntity configRegionalEntity = new ConfigRegionalEntity(deserializedLocation, respawnTime);
+                    ConfigRegionalEntity configRegionalEntity = new ConfigRegionalEntity(deserializedLocation, string, respawnTime);
                     this.configRegionalEntities.put(configRegionalEntity.uuid, configRegionalEntity);
                 }
 
@@ -369,7 +370,7 @@ public class CustomBossConfigFields {
 
         }
 
-        this.followRange = configuration.getInt("followRange");
+        this.followRange = configuration.getInt("followDistance");
 
         this.leashRadius = configuration.getDouble("leashRadius");
 
@@ -404,9 +405,12 @@ public class CustomBossConfigFields {
         public UUID uuid = UUID.randomUUID();
         public long respawnTimeLeft = 0;
         public Location spawnLocation;
+        //this is needed to spawn regional bosses when worlds load and to calculate how many regional bosses exist in a world before it's set up
+        public String spawnLocationString;
 
-        public ConfigRegionalEntity(Location spawnLocation, long cooldown) {
+        public ConfigRegionalEntity(Location spawnLocation, String spawnLocationString, long cooldown) {
             this.spawnLocation = spawnLocation;
+            this.spawnLocationString = spawnLocationString;
             this.respawnTimeLeft = cooldown;
         }
 
@@ -563,18 +567,30 @@ public class CustomBossConfigFields {
     }
 
     public ConfigRegionalEntity addSpawnLocation(Location location) {
-        ConfigRegionalEntity newConfigRegionalEntity = new ConfigRegionalEntity(location, 0);
+        ConfigRegionalEntity newConfigRegionalEntity = new ConfigRegionalEntity(location, ConfigurationLocation.serialize(location), 0);
         configRegionalEntities.put(newConfigRegionalEntity.uuid, newConfigRegionalEntity);
+        new RegionalBossEntity(this, newConfigRegionalEntity);
         List<String> convertedList = new ArrayList<>();
         for (ConfigRegionalEntity configRegionalEntity : configRegionalEntities.values())
-            convertedList.add(ConfigurationLocation.serialize(configRegionalEntity.spawnLocation) + ":" + configRegionalEntity.respawnTimeLeft);
-        fileConfiguration.set("spawnLocations", convertedList);
-        try {
-            fileConfiguration.save(file);
-        } catch (IOException ex) {
-            new WarningMessage("Failed to save new boss location! It will not show up in the right place after a restart. Report this to the dev.");
-        }
+            convertedList.add(configRegionalEntity.spawnLocationString);
+        ConfigurationEngine.writeValue(convertedList, file, fileConfiguration, "spawnLocations");
         return newConfigRegionalEntity;
+    }
+
+    public void removeSpawnLocation(ConfigRegionalEntity configRegionalEntity) {
+        configRegionalEntities.remove(configRegionalEntity.uuid, configRegionalEntity);
+        List<String> convertedList = new ArrayList<>();
+        for (ConfigRegionalEntity iteratedConfigRegionalEntity : configRegionalEntities.values())
+            convertedList.add(ConfigurationLocation.serialize(iteratedConfigRegionalEntity.spawnLocation) + ":" + iteratedConfigRegionalEntity.respawnTimeLeft);
+        for (Iterator<RegionalBossEntity> regionalBossEntityIterator = RegionalBossEntity.getRegionalBossEntityList().iterator(); regionalBossEntityIterator.hasNext(); ) {
+            RegionalBossEntity regionalBossEntity = regionalBossEntityIterator.next();
+            if (regionalBossEntity.configRegionalEntity.equals(configRegionalEntity)) {
+                regionalBossEntity.softDelete();
+                regionalBossEntityIterator.remove();
+            }
+
+        }
+        ConfigurationEngine.writeValue(convertedList, file, fileConfiguration, "spawnLocations");
     }
 
     public void setLeashRadius(double leashRadius) {

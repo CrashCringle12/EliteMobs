@@ -11,6 +11,7 @@ import com.magmaguy.elitemobs.combatsystem.combattag.TeleportTag;
 import com.magmaguy.elitemobs.combatsystem.displays.DamageDisplay;
 import com.magmaguy.elitemobs.combatsystem.displays.HealthDisplay;
 import com.magmaguy.elitemobs.commands.getLootMenu;
+import com.magmaguy.elitemobs.commands.setup.SetupMenu;
 import com.magmaguy.elitemobs.commands.shops.BuyOrSellMenu;
 import com.magmaguy.elitemobs.commands.shops.CustomShopMenu;
 import com.magmaguy.elitemobs.commands.shops.ProceduralShopMenu;
@@ -94,6 +95,7 @@ public class EventsRegistrer {
         pluginManager.registerEvents(new PigHandler(), plugin);
         pluginManager.registerEvents(new SheepHandler(), plugin);
         pluginManager.registerEvents(new FindSuperMobs(), plugin);
+        pluginManager.registerEvents(new ItemEnchantmentPrevention(), plugin);
 
         //Mob damage
         pluginManager.registerEvents(new PlayerDamagedByEliteMobHandler(), plugin);
@@ -126,6 +128,8 @@ public class EventsRegistrer {
         pluginManager.registerEvents(new PlayerDamagedByEliteMobEvent.PlayerDamagedByEliteMobEventFilter(), plugin);
         pluginManager.registerEvents(new EliteMobDamagedByEliteMobEvent.EliteMobDamagedByEliteMobFilter(), plugin);
         pluginManager.registerEvents(new EliteMobEnterCombatEvent.EliteMobEnterCombatEventFilter(), plugin);
+        pluginManager.registerEvents(new PlayerPreTeleportEvent.PlayerPreTeleportEventEvents(), plugin);
+        pluginManager.registerEvents(new PlayerTeleportEvent.PlayerTeleportEventExecutor(), plugin);
 
         /*
         While these powers could be registered in a more automated way, I realized that it's also a bad way of getting
@@ -180,7 +184,7 @@ public class EventsRegistrer {
         pluginManager.registerEvents(new SummonAssistant(), plugin);
         pluginManager.registerEvents(new HyperLoot(), plugin);
         pluginManager.registerEvents(new SummonRaug(), plugin);
-        pluginManager.registerEvents(new SummonAssistant(), plugin);
+        pluginManager.registerEvents(new SummonTheReturned(), plugin);
         pluginManager.registerEvents(new SummonEmbers(), plugin);
         pluginManager.registerEvents(new MeteorShower(), plugin);
         pluginManager.registerEvents(new BulletHell(), plugin);
@@ -225,6 +229,7 @@ public class EventsRegistrer {
         pluginManager.registerEvents(new CustomShopMenu(), plugin);
         pluginManager.registerEvents(new BuyOrSellMenu(), plugin);
         pluginManager.registerEvents(new SellMenu(), plugin);
+        pluginManager.registerEvents(new SetupMenu.SetupMenuListeners(), plugin);
 
         //Minecraft behavior canceller
         pluginManager.registerEvents(new ChunkUnloadMetadataPurge(), plugin);
@@ -273,9 +278,11 @@ public class EventsRegistrer {
 
         //Initialize items from custom events
         pluginManager.registerEvents(new FlamethrowerEnchantment.FlamethrowerEnchantmentEvents(), plugin);
+        //if (EnchantmentsConfig.getEnchantment(SummonMerchantEnchantment.key + ".yml").isEnabled())
+        pluginManager.registerEvents(new SummonMerchantEnchantment.SummonMerchantEvents(), plugin);
         pluginManager.registerEvents(new MeteorShowerEnchantment.MeteorShowerEvents(), plugin);
         pluginManager.registerEvents(new JusticeStormEnchantment.StormJusticeEvents(), plugin);
-        pluginManager.registerEvents(new DrillingEnchantment(), plugin);
+        pluginManager.registerEvents(new DrillingEnchantment.DrillingEnchantmentEvents(), plugin);
         pluginManager.registerEvents(new IceBreakerEnchantment.IceBreakerEnchantmentEvent(), plugin);
 
         //Initialize adventurer's guild

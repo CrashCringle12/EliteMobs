@@ -14,7 +14,7 @@ import java.util.Arrays;
 
 public class CustomLootConfig {
 
-    private static ArrayList<CustomLootConfigFields> customLootConfigFieldsList = new ArrayList<>(Arrays.asList(
+    private static final ArrayList<CustomLootConfigFields> customLootConfigFieldsList = new ArrayList<>(Arrays.asList(
             new BerserkerCharmConfig(),
             new ChameleonCharmConfig(),
             new CheetahCharmConfig(),
@@ -35,7 +35,11 @@ public class CustomLootConfig {
             new VampiricCharmConfig(),
             new ZombieKingsAxeConfig(),
             new MeteorShowerScrollConfig(),
-            new JusticeStormShellConfig()
+
+
+
+            new JusticeStormShellConfig(),
+	    new SummonMerchantScrollConfig()
     ));
 
     public static void initializeConfigs() {

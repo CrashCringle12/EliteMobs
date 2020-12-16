@@ -3,9 +3,14 @@ package com.magmaguy.elitemobs.npcs;
 import com.magmaguy.elitemobs.EntityTracker;
 import com.magmaguy.elitemobs.MetadataHandler;
 import com.magmaguy.elitemobs.adventurersguild.GuildRankMenuHandler;
+import com.magmaguy.elitemobs.api.PlayerPreTeleportEvent;
+import com.magmaguy.elitemobs.api.PlayerTeleportEvent;
+import com.magmaguy.elitemobs.commands.CommandHandler;
 import com.magmaguy.elitemobs.commands.shops.CustomShopMenu;
 import com.magmaguy.elitemobs.commands.shops.ProceduralShopMenu;
+import com.magmaguy.elitemobs.commands.shops.SellMenu;
 import com.magmaguy.elitemobs.quests.QuestsMenu;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,7 +29,9 @@ public class NPCInteractions implements Listener {
         BAR,
         ARENA,
         QUEST_GIVER,
-        NONE
+        NONE,
+        SELL,
+        TELEPORT_BACK
     }
 
     @EventHandler
@@ -56,7 +63,7 @@ public class NPCInteractions implements Listener {
                 npcEntity.sayDialog(event.getPlayer());
                 break;
             case CUSTOM_SHOP:
-                if (event.getPlayer().hasPermission("elitemobs.customshop.npc"))
+                if (CommandHandler.userPermCheck("elitemobs.customshop.npc", event.getPlayer()))
                     new BukkitRunnable() {
                         @Override
                         public void run() {
@@ -66,7 +73,7 @@ public class NPCInteractions implements Listener {
 
                 break;
             case PROCEDURALLY_GENERATED_SHOP:
-                if (event.getPlayer().hasPermission("elitemobs.shop.npc"))
+                if (CommandHandler.userPermCheck("elitemobs.shop.npc", event.getPlayer()))
                     new BukkitRunnable() {
                         @Override
                         public void run() {
@@ -86,7 +93,27 @@ public class NPCInteractions implements Listener {
                 break;
             case ARENA:
                 break;
+            case SELL:
+                if (CommandHandler.userPermCheck("elitemobs.shop.npc", event.getPlayer()))
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            SellMenu sellMenu = new SellMenu();
+                            sellMenu.constructSellMenu(event.getPlayer());
+                        }
+                    }.runTaskLater(MetadataHandler.PLUGIN, 1);
+                break;
+            case TELEPORT_BACK:
+                if (CommandHandler.userPermCheck("elitemobs.back.npc", event.getPlayer())) {
+                    Location previousLocation = PlayerTeleportEvent.previousLocations.get(event.getPlayer());
+                    if (previousLocation == null)
+                        event.getPlayer().sendMessage("[EliteMobs] Couldn't send you back to your previous location - no previous location found!");
+                    else
+                        PlayerPreTeleportEvent.teleportPlayer(event.getPlayer(), previousLocation);
+                }
+                break;
             case NONE:
+            default:
                 break;
 
         }

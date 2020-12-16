@@ -1,7 +1,11 @@
 package com.magmaguy.elitemobs.config;
 
 import com.magmaguy.elitemobs.ChatColorConverter;
+import com.magmaguy.elitemobs.utils.ConfigurationLocation;
 import com.magmaguy.elitemobs.utils.WarningMessage;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -23,6 +27,7 @@ public class DefaultConfig {
     public static boolean otherCommandsLeadToEMStatusMenu;
     public static boolean usePermissions;
     public static boolean setupDone;
+    public static Location defaultSpawnLocation;
 
     private static File file = null;
     private static FileConfiguration fileConfiguration = null;
@@ -43,6 +48,14 @@ public class DefaultConfig {
         otherCommandsLeadToEMStatusMenu = ConfigurationEngine.setBoolean(fileConfiguration, "otherCommandsLeadToEMStatusMenu", true);
         usePermissions = ConfigurationEngine.setBoolean(fileConfiguration, "Use permissions", false);
         setupDone = ConfigurationEngine.setBoolean(fileConfiguration, "setupDone", false);
+        try {
+            defaultSpawnLocation = ConfigurationLocation.deserialize(
+                    ConfigurationEngine.setString(
+                            fileConfiguration, "defaultSpawnLocation",
+                            ConfigurationLocation.serialize(Bukkit.getWorlds().get(0).getSpawnLocation())));
+        } catch (Exception ex) {
+            new WarningMessage("There is an issue with your defaultSpawnLocation in the config.yml configuration file! Fix it!");
+        }
 
         ConfigurationEngine.fileSaverOnlyDefaults(fileConfiguration, file);
 
@@ -68,6 +81,7 @@ public class DefaultConfig {
         commandSender.sendMessage(ChatColorConverter.convert("&cYou can change this preference at any point in config.yml under \"Use permissions\""));
         commandSender.sendMessage(ChatColorConverter.convert("&4This message will not be shown again."));
         commandSender.sendMessage("----------------------------------------------------");
+        commandSender.sendMessage(ChatColor.GREEN + "A video on how to set EliteMobs up is available here: " + ChatColor.DARK_BLUE + "https://youtu.be/2u71JCyGj-E");
         commandSender.sendMessage(ChatColorConverter.convert("&aNeed help?  &9https://discord.gg/9f5QSka"));
     }
 

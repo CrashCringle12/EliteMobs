@@ -1,20 +1,18 @@
 package com.magmaguy.elitemobs.mobconstructor.custombosses;
 
-import com.magmaguy.elitemobs.ChatColorConverter;
 import com.magmaguy.elitemobs.MetadataHandler;
 import com.magmaguy.elitemobs.api.EliteMobDeathEvent;
+import com.magmaguy.elitemobs.api.internal.NewMinidungeonRelativeBossLocationEvent;
 import com.magmaguy.elitemobs.config.custombosses.CustomBossConfigFields;
 import com.magmaguy.elitemobs.events.mobs.sharedeventproperties.DynamicBossLevelConstructor;
 import com.magmaguy.elitemobs.powers.bosspowers.SpiritWalk;
-import com.magmaguy.elitemobs.thirdparty.discordsrv.DiscordSRVAnnouncement;
 import com.magmaguy.elitemobs.utils.ChunkLocationChecker;
+import com.magmaguy.elitemobs.utils.InfoMessage;
 import com.magmaguy.elitemobs.utils.WarningMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.potion.PotionEffect;
@@ -32,30 +30,41 @@ public class RegionalBossEntity implements Listener {
     }
 
     public CustomBossEntity customBossEntity;
-    private final CustomBossConfigFields.ConfigRegionalEntity configRegionalEntity;
+    public CustomBossConfigFields.ConfigRegionalEntity configRegionalEntity;
     public boolean isAlive;
-    private final Location spawnLocation;
+    public Location spawnLocation;
+    public final String spawnLocationString;
     private double leashRadius;
     private final int respawnCooldown;
     public boolean inCooldown = false;
     private final CustomBossConfigFields customBossConfigFields;
 
+    private static boolean worldDoesntExistTrigger = false;
+
     public RegionalBossEntity(CustomBossConfigFields customBossConfigFields, CustomBossConfigFields.ConfigRegionalEntity configRegionalEntity) {
         this.configRegionalEntity = configRegionalEntity;
         this.spawnLocation = configRegionalEntity.spawnLocation;
+        this.spawnLocationString = configRegionalEntity.spawnLocationString;
         this.respawnCooldown = customBossConfigFields.getSpawnCooldown();
         this.customBossConfigFields = customBossConfigFields;
         this.leashRadius = customBossConfigFields.getLeashRadius();
+        regionalBossEntityList.add(this);
         if (spawnLocation == null || spawnLocation.getWorld() == null) {
+            if (Bukkit.getWorld(getSpawnWorldName()) == null) {
+                if (!worldDoesntExistTrigger) {
+                    new InfoMessage("One or more bosses have spawn locations set to worlds that do not exist in the server! This might be correct if you unloaded a Minidungeon world.");
+                    worldDoesntExistTrigger = true;
+                }
+                return;
+            }
             new WarningMessage("Spawn location for regional boss " + customBossConfigFields.getFileName() + " is not valid. Incorrect location: " + spawnLocation);
             new WarningMessage("EliteMobs will skip this entity's spawn.");
             return;
         }
         spawnRegionalBoss();
-        regionalBossEntityList.add(this);
     }
 
-    private void spawnRegionalBoss() {
+    public void spawnRegionalBoss() {
 
         EntityType entityType;
 
@@ -106,11 +115,10 @@ public class RegionalBossEntity implements Listener {
         regionalBossWatchdog();
         customBossEntity.getLivingEntity().addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 3));
         customBossEntity.setIsRegionalBoss(true);
-        if (customBossConfigFields.getTimeout() > 0)
-            startEscapeMechanismDelay(customBossConfigFields.getTimeout());
 
     }
 
+    private final RegionalBossEntity regionalBossEntity = this;
     private void respawnRegionalBoss() {
 
         isAlive = false;
@@ -126,6 +134,10 @@ public class RegionalBossEntity implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
+                if (!regionalBossEntityList.contains(regionalBossEntity)) {
+                    cancel();
+                    return;
+                }
                 inCooldown = false;
                 spawnRegionalBoss();
                 checkLeash();
@@ -149,6 +161,10 @@ public class RegionalBossEntity implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
+                if (!regionalBossEntityList.contains(regionalBossEntity)) {
+                    cancel();
+                    return;
+                }
 
                 Entity livingEntity = customBossEntity.advancedGetEntity();
 
@@ -173,36 +189,6 @@ public class RegionalBossEntity implements Listener {
     }
 
     /**
-     * Starts the escape mechanic for bosses that have this feature. After a set time, in minutes, the boss will escape,
-     * potentially broadcasting an escape message.
-     */
-    private void startEscapeMechanismDelay(int timeout) {
-
-        if (timeout < 1) return;
-
-        new BukkitRunnable() {
-
-            @Override
-            public void run() {
-                LivingEntity livingEntity = customBossEntity.advancedGetEntity();
-                if (livingEntity == null) return;
-                if (livingEntity.isDead()) return;
-                if (customBossConfigFields.getAnnouncementPriority() < 1) return;
-                if (customBossConfigFields.getEscapeMessage() != null)
-                    for (Player player : Bukkit.getOnlinePlayers())
-                        if (player.getWorld().equals(livingEntity.getWorld()))
-                            player.sendMessage(ChatColorConverter.convert(customBossConfigFields.getEscapeMessage()));
-                if (customBossConfigFields.getAnnouncementPriority() < 3) return;
-                new DiscordSRVAnnouncement(ChatColorConverter.convert(customBossConfigFields.getEscapeMessage()));
-                customBossEntity.remove();
-
-            }
-
-        }.runTaskLater(MetadataHandler.PLUGIN, 20 * 60 * timeout);
-
-    }
-
-    /**
      * This may cause issues when bosses wander really far from the spawn chunk
      */
     private void regionalBossWatchdog() {
@@ -211,6 +197,10 @@ public class RegionalBossEntity implements Listener {
 
             @Override
             public void run() {
+                if (!regionalBossEntityList.contains(regionalBossEntity)) {
+                    cancel();
+                    return;
+                }
                 if (inCooldown)
                     return;
                 if (!ChunkLocationChecker.locationIsLoaded(spawnLocation)) return;
@@ -224,6 +214,20 @@ public class RegionalBossEntity implements Listener {
             }
 
         }.runTaskTimerAsynchronously(MetadataHandler.PLUGIN, 20, 20 * 60);
+    }
+
+    public void softDelete() {
+        //regionalBossEntityList.remove(this);
+        customBossEntity.remove();
+    }
+
+    //public void hardDelete() {
+    //    customBossConfigFields.removeSpawnLocation(configRegionalEntity);
+    //    regionalBossEntityList.remove(this);
+    //}
+
+    public String getSpawnWorldName() {
+        return this.spawnLocationString.split(",")[0];
     }
 
     public CustomBossConfigFields getCustomBossConfigFields() {
@@ -240,6 +244,11 @@ public class RegionalBossEntity implements Listener {
                     return;
                 regionalBossEntity.respawnRegionalBoss();
             }
+        }
+
+        @EventHandler(ignoreCancelled = true)
+        public void onNewMinidungeonRelativeBossLocationEvent(NewMinidungeonRelativeBossLocationEvent event) {
+            event.getCustomBossConfigFields().addSpawnLocation(event.getRealLocation());
         }
     }
 
