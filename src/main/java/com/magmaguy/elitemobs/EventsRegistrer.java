@@ -7,7 +7,6 @@ import com.magmaguy.elitemobs.collateralminecraftchanges.*;
 import com.magmaguy.elitemobs.combatsystem.*;
 import com.magmaguy.elitemobs.combatsystem.antiexploit.*;
 import com.magmaguy.elitemobs.combatsystem.combattag.CombatTag;
-import com.magmaguy.elitemobs.combatsystem.combattag.TeleportTag;
 import com.magmaguy.elitemobs.combatsystem.displays.DamageDisplay;
 import com.magmaguy.elitemobs.combatsystem.displays.HealthDisplay;
 import com.magmaguy.elitemobs.commands.getLootMenu;
@@ -294,8 +293,6 @@ public class EventsRegistrer {
         //Combat tag
         if (CombatTagConfig.enableCombatTag)
             pluginManager.registerEvents(new CombatTag(), plugin);
-        if (CombatTagConfig.enableTeleportTimer)
-            pluginManager.registerEvents(new TeleportTag(), plugin);
 
 
         //Prevent elitemob on elitemob aggro

@@ -35,7 +35,7 @@ public class JusticeStormEnchantment extends CustomEnchantment {
     private static final ArrayList<Player> playersUsingJusticeStorm = new ArrayList<>();
 
     public JusticeStormEnchantment() {
-        super(key);
+        super(key, false);
     }
 
     private static void trackingTridentLoop(LivingEntity player, Trident trident, Player p1) {
