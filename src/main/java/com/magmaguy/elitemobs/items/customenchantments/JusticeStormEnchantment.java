@@ -1,6 +1,6 @@
 package com.magmaguy.elitemobs.items.customenchantments;
 
-import com.magmaguy.elitemobs.EntityTracker;
+import com.magmaguy.elitemobs.entitytracker.EntityTracker;
 import com.magmaguy.elitemobs.MetadataHandler;
 import static com.magmaguy.elitemobs.items.customenchantments.CustomEnchantment.hasCustomEnchantment;
 import com.magmaguy.elitemobs.powers.offensivepowers.AttackTrident;
