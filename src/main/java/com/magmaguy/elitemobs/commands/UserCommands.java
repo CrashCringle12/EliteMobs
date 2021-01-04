@@ -135,7 +135,12 @@ public class UserCommands {
             //track bosses
             case "trackcustomboss":
                 try {
-                    CustomBossEntity.getCustomBoss(UUID.fromString(args[2])).realTimeTracking(player);
+                    for (CustomBossEntity customBossEntity : CustomBossEntity.trackableCustomBosses)
+                        if (customBossEntity.uuid.equals(UUID.fromString(args[2]))) {
+                            customBossEntity.startBossBarTask(player, true);
+                            return true;
+                        }
+                    player.sendMessage("[EliteMobs] Sorry, this boss is already gone!");
                 } catch (Exception ex) {
                     //happens when players try to track an entity that has despawned for any reason
                     player.sendMessage("[EliteMobs] Sorry, this boss is already gone!");
