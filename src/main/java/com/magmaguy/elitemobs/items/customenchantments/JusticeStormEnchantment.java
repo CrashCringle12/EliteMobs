@@ -2,6 +2,8 @@ package com.magmaguy.elitemobs.items.customenchantments;
 
 import com.magmaguy.elitemobs.entitytracker.EntityTracker;
 import com.magmaguy.elitemobs.MetadataHandler;
+import com.magmaguy.elitemobs.api.internal.RemovalReason;
+import com.magmaguy.elitemobs.combatsystem.EliteProjectile;
 import static com.magmaguy.elitemobs.items.customenchantments.CustomEnchantment.hasCustomEnchantment;
 import com.magmaguy.elitemobs.powers.offensivepowers.AttackTrident;
 import com.magmaguy.elitemobs.utils.CooldownHandler;
@@ -20,6 +22,7 @@ import org.bukkit.SoundCategory;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Trident;
@@ -39,7 +42,6 @@ public class JusticeStormEnchantment extends CustomEnchantment {
     }
 
     private static void trackingTridentLoop(LivingEntity player, Trident trident, Player p1) {
-        EntityTracker.registerCullableEntity(trident);
         new BukkitRunnable() {
             int counter = 0;
 
@@ -52,11 +54,11 @@ public class JusticeStormEnchantment extends CustomEnchantment {
                     trident.getWorld().spawnParticle(Particle.NAUTILUS, trident.getLocation(), 10, 0.01, 0.01, 0.01, 0.01);
                 } else {
                     trident.setGravity(true);
-                    EntityTracker.unregisterCullableEntity(trident);
+                    EntityTracker.unregister(trident, RemovalReason.EFFECT_TIMEOUT);
                     cancel();
                 }
                 if (counter > 20 * 10) {
-                    EntityTracker.unregisterCullableEntity(trident);
+                    EntityTracker.unregister(trident, RemovalReason.EFFECT_TIMEOUT);
                     trident.setGravity(true);
                     cancel();
                 }
@@ -115,7 +117,7 @@ public class JusticeStormEnchantment extends CustomEnchantment {
                         if (((Player) nearbyEntity).getGameMode().equals(GameMode.ADVENTURE) ||
                                 ((Player) nearbyEntity).getGameMode().equals(GameMode.SURVIVAL)) {
                             player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_RIPTIDE_1, 100, 2);
-                            Trident trident = AttackTrident.shootTrident(player, (Player) nearbyEntity);
+                            Trident trident = AttackTrident.shootTrident(player, (Player) nearbyEntity);                            
                             trident.setVelocity(trident.getVelocity().multiply(2));
                             trident.setGravity(false);
                             trackingTridentLoop((LivingEntity) nearbyEntity, trident, player);

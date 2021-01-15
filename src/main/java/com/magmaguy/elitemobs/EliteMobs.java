@@ -1,9 +1,8 @@
 package com.magmaguy.elitemobs;
 
 /*
- * Created by MagmaGuy on 07/10/2016.
+  * Created by MagmaGuy on 07/10/2016.
  */
-
 import com.magmaguy.elitemobs.api.EliteMobDamagedByPlayerEvent;
 import com.magmaguy.elitemobs.commands.CommandHandler;
 import com.magmaguy.elitemobs.config.*;
@@ -77,8 +76,6 @@ public class EliteMobs extends JavaPlugin {
     @Override
     public void onEnable() {
 
-        //Enable stats
-
         Bukkit.getLogger().info(" _____ _     _____ _____ ________  ______________  _____");
         Bukkit.getLogger().info("|  ___| |   |_   _|_   _|  ___|  \\/  |  _  | ___ \\/  ___|");
         Bukkit.getLogger().info("| |__ | |     | |   | | | |__ | .  . | | | | |_/ /\\ `--.");
@@ -98,31 +95,31 @@ public class EliteMobs extends JavaPlugin {
             }
         }
 
-
         //Remove entities that should not exist
         CrashFix.startupCheck();
 
         /*
-        New config loading
+         New config loading
          */
         initializeConfigs();
 
         /*
-        Load plugin worlds
+         Load plugin worlds
          */
         CustomWorldLoading.startupWorldInitialization();
 
-        if (worldguardIsEnabled)
+        if (worldguardIsEnabled) {
             Bukkit.getLogger().info("[EliteMobs] WorldGuard compatibility is enabled!");
-        else
+        } else {
             Bukkit.getLogger().warning("[EliteMobs] WorldGuard compatibility is not enabled!");
+        }
 
         //Enable Vault
         try {
             VaultCompatibility.vaultSetup();
         } catch (Exception e) {
-            Bukkit.getLogger().warning("[EliteMobs] Something went wrong with the vault configuration - your Vault " +
-                    "version is probably not compatible with this EliteMobs version. Please contact the dev about this error.");
+            Bukkit.getLogger().warning("[EliteMobs] Something went wrong with the vault configuration - your Vault "
+                    + "version is probably not compatible with this EliteMobs version. Please contact the dev about this error.");
             VaultCompatibility.VAULT_ENABLED = false;
         }
 
@@ -150,45 +147,40 @@ public class EliteMobs extends JavaPlugin {
         EliteMobDamagedByPlayerEvent.EliteMobDamagedByPlayerEventFilter.launchInternalClock();
 
         /*
-        Initialize mob values
+         Initialize mob values
          */
         PluginMobProperties.initializePluginMobValues();
 
         /*
-        Cache animation vectors
+         Cache animation vectors
          */
         MinorPowerStanceMath.initializeVectorCache();
         MajorPowerStanceMath.initializeVectorCache();
 
         /*
-        Scan for loaded SuperMobs
+         Scan for loaded SuperMobs
          */
         PassiveEliteMobDeathHandler.SuperMobScanner.scanSuperMobs();
 
         /*
-        Check for new plugin version
+         Check for new plugin version
          */
         VersionChecker.updateComparer();
-        if (!VersionChecker.pluginIsUpToDate)
+        if (!VersionChecker.pluginIsUpToDate) {
             this.getServer().getPluginManager().registerEvents(new VersionWarner(), this);
+        }
 
         /*
-        Initialize anticheat block values
+         Initialize anticheat block values
          */
         NonSolidBlockTypes.initializeNonSolidBlocks();
 
         /*
-        Launch quests
+         Launch quests
          */
         //QuestRefresher.generateNewQuestMenus();
-
         /*
-        Spawn world bosses
-         */
-        RegionalBossHandler.initialize();
-
-        /*
-        Initialize NPCs
+         Initialize NPCs
          */
         new NPCInitializer();
 
@@ -210,9 +202,9 @@ public class EliteMobs extends JavaPlugin {
         CustomBossesConfig.initializeConfigs();
         //Find the stats of bosses in minidungeons
         for (Minidungeon minidungeon : Minidungeon.minidungeons.values()) {
-            if (minidungeon.dungeonPackagerConfigFields.getDungeonLocationType().equals(DungeonPackagerConfigFields.DungeonLocationType.WORLD))
+            if (minidungeon.dungeonPackagerConfigFields.getDungeonLocationType().equals(DungeonPackagerConfigFields.DungeonLocationType.WORLD)) {
                 minidungeon.quantifyWorldBosses();
-            else if (minidungeon.dungeonPackagerConfigFields.getDungeonLocationType().equals(DungeonPackagerConfigFields.DungeonLocationType.SCHEMATIC)) {
+            } else if (minidungeon.dungeonPackagerConfigFields.getDungeonLocationType().equals(DungeonPackagerConfigFields.DungeonLocationType.SCHEMATIC)) {
                 minidungeon.quantifySchematicBosses();
                 //Due to boot order this needs to run after the minidungeons and the custom bosses are initialized
                 minidungeon.completeSchematicMinidungeonInitialization();
@@ -228,13 +220,15 @@ public class EliteMobs extends JavaPlugin {
         try {
             worldguardIsEnabled = WorldGuardCompatibility.initialize();
         } catch (NoClassDefFoundError | IllegalStateException ex) {
-            Bukkit.getLogger().warning("[EliteMobs] Error loading WorldGuard. EliteMob-specific flags will not work." +
-                    " Except if you just reloaded the plugin, in which case they will totally work.");
+            Bukkit.getLogger().warning("[EliteMobs] Error loading WorldGuard. EliteMob-specific flags will not work."
+                    + " Except if you just reloaded the plugin, in which case they will totally work.");
             worldguardIsEnabled = false;
         }
-        if (!worldguardIsEnabled)
-            if (Bukkit.getPluginManager().getPlugin("WorldGuard") != null)
+        if (!worldguardIsEnabled) {
+            if (Bukkit.getPluginManager().getPlugin("WorldGuard") != null) {
                 worldguardIsEnabled = true;
+            }
+        }
 
     }
 
@@ -257,8 +251,9 @@ public class EliteMobs extends JavaPlugin {
         CustomEnchantment.getCustomEnchantments().clear();
         Minidungeon.minidungeons.clear();
 
-        if (this.placeholders != null)
+        if (this.placeholders != null) {
             ((Placeholders) placeholders).unregister();
+        }
 
         HandlerList.unregisterAll(MetadataHandler.PLUGIN);
 
@@ -299,25 +294,28 @@ public class EliteMobs extends JavaPlugin {
     }
 
     public static void worldScanner() {
-        for (World world : Bukkit.getWorlds())
+        for (World world : Bukkit.getWorlds()) {
             if (ValidWorldsConfig.fileConfiguration.getBoolean("Valid worlds." + world.getName())) {
                 validWorldList.add(world);
-                if (ValidWorldsConfig.fileConfiguration.getBoolean("Zone-based elitemob spawning worlds." + world.getName()))
+                if (ValidWorldsConfig.fileConfiguration.getBoolean("Zone-based elitemob spawning worlds." + world.getName())) {
                     zoneBasedSpawningWorlds.add(world);
+                }
                 if (ValidWorldsConfig.fileConfiguration.getBoolean("Nightmare mode worlds." + world.getName())) {
                     nightmareWorlds.add(world);
                     DaylightWatchdog.preventDaylight(world);
                 }
             }
+        }
 
     }
 
     /*
-    Repeating tasks that run as long as the server is on
+     Repeating tasks that run as long as the server is on
      */
     private void launchRunnables() {
-        if (!zoneBasedSpawningWorlds.isEmpty())
+        if (!zoneBasedSpawningWorlds.isEmpty()) {
             Grid.initializeGrid();
+        }
         int eggTimerInterval = 20 * 60 * 10 / DefaultConfig.superMobStackAmount;
         new PlayerPotionEffects();
         QuestsMenu.questRefresher();

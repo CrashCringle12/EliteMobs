@@ -3,6 +3,7 @@ package com.magmaguy.elitemobs.powers.bosspowers;
 import com.magmaguy.elitemobs.entitytracker.EntityTracker;
 import com.magmaguy.elitemobs.MetadataHandler;
 import com.magmaguy.elitemobs.api.EliteMobDamagedByPlayerEvent;
+import com.magmaguy.elitemobs.api.internal.RemovalReason;
 import com.magmaguy.elitemobs.config.powers.PowersConfig;
 import com.magmaguy.elitemobs.mobconstructor.EliteMobEntity;
 import com.magmaguy.elitemobs.powers.BossPower;
@@ -11,7 +12,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
-import org.bukkit.entity.Trident;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -78,7 +78,6 @@ public class PrimeHell extends BossPower implements Listener {
 
 
     private static void trackingTridentLoop(Player player, Trident trident) {
-        EntityTracker.registerCullableEntity(trident);
         new BukkitRunnable() {
             int counter = 0;
 
@@ -91,11 +90,11 @@ public class PrimeHell extends BossPower implements Listener {
                     trident.getWorld().spawnParticle(Particle.NAUTILUS, trident.getLocation(), 10, 0.01, 0.01, 0.01, 0.01);
                 } else {
                     trident.setGravity(true);
-                    EntityTracker.unregisterCullableEntity(trident);
+                    EntityTracker.unregister(trident, RemovalReason.EFFECT_TIMEOUT);
                     cancel();
                 }
                 if (counter > 20 * 10) {
-                    EntityTracker.unregisterCullableEntity(trident);
+                    EntityTracker.unregister(trident, RemovalReason.EFFECT_TIMEOUT);
                     trident.setGravity(true);
                     cancel();
                 }
