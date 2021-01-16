@@ -78,7 +78,9 @@ public class PowersConfig {
             new ArrowFireworksConfig(),
             new ArrowRainConfig(),
             new GroundPoundConfig(),
-            new DeathSliceConfig()
+            new DeathSliceConfig(),
+            new TrackingFireballConfig()
+
     ));
 
     public static void initializeConfigs() {

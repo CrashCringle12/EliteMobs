@@ -7,7 +7,6 @@ import com.magmaguy.elitemobs.config.MobCombatSettingsConfig;
 import com.magmaguy.elitemobs.config.custombosses.CustomBossConfigFields;
 import com.magmaguy.elitemobs.config.custombosses.CustomBossesConfig;
 import com.magmaguy.elitemobs.entitytracker.EliteEntityTracker;
-import com.magmaguy.elitemobs.entitytracker.TrackedEntity;
 import com.magmaguy.elitemobs.items.customitems.CustomItem;
 import com.magmaguy.elitemobs.mobconstructor.EliteMobEntity;
 import com.magmaguy.elitemobs.mobconstructor.SimplePersistentEntity;
@@ -16,7 +15,6 @@ import com.magmaguy.elitemobs.powers.ElitePower;
 import com.magmaguy.elitemobs.thirdparty.discordsrv.DiscordSRVAnnouncement;
 import com.magmaguy.elitemobs.thirdparty.libsdisguises.DisguiseEntity;
 import com.magmaguy.elitemobs.thirdparty.worldguard.WorldGuardSpawnEventBypasser;
-import com.magmaguy.elitemobs.utils.ChunkLocationChecker;
 import com.magmaguy.elitemobs.utils.CommandRunner;
 import com.magmaguy.elitemobs.utils.WarningMessage;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -31,6 +29,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -39,7 +38,6 @@ import org.bukkit.scheduler.BukkitTask;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class CustomBossEntity extends EliteMobEntity implements Listener, SimplePersistentEntityInterface {
@@ -127,8 +125,7 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
     public static CustomBossEntity constructCustomBoss(String fileName,
                                                        Location location,
                                                        int mobLevel,
-                                                       double health,
-                                                       UUID phaseBossUUID) {
+                                                       double health) {
         CustomBossConfigFields customBossMobsConfigAttributes = CustomBossesConfig.getCustomBoss(fileName);
         LivingEntity livingEntity = generateLivingEntity(location, customBossMobsConfigAttributes);
         if (livingEntity == null) return null;
@@ -138,8 +135,7 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
                 livingEntity,
                 mobLevel,
                 ElitePowerParser.parsePowers(customBossMobsConfigAttributes.getPowers()),
-                health,
-                phaseBossUUID);
+                health);
     }
 
 
@@ -155,6 +151,9 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
         return getLivingEntity();
     }
 
+    /**
+     * Main custom boss constructor
+     */
     public CustomBossEntity(CustomBossConfigFields customBossConfigFields,
                             LivingEntity livingEntity,
                             int mobLevel,
@@ -163,7 +162,8 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
                 mobLevel,
                 customBossConfigFields.getName(),
                 elitePowers,
-                CreatureSpawnEvent.SpawnReason.CUSTOM);
+                CreatureSpawnEvent.SpawnReason.CUSTOM,
+                customBossConfigFields.getIsPersistent());
         initializeCustomBoss(customBossConfigFields);
         spawnMessage();
         if (customBossConfigFields.getPhases().size() > 0)
@@ -171,7 +171,7 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
     }
 
     /**
-     * For regional bosses
+     * For regional & phase bosses
      */
     public CustomBossEntity(CustomBossConfigFields customBossConfigFields,
                             LivingEntity livingEntity,
@@ -183,7 +183,9 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
                 mobLevel,
                 customBossConfigFields.getName(),
                 elitePowers,
-                CreatureSpawnEvent.SpawnReason.CUSTOM);
+                CreatureSpawnEvent.SpawnReason.CUSTOM,
+                //regional & phase bosses HAVE to be persistent
+                true);
         initializeCustomBoss(customBossConfigFields);
         if (!isPhaseBossRespawn)
             spawnMessage();
@@ -199,15 +201,15 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
                             LivingEntity livingEntity,
                             int mobLevel,
                             HashSet<ElitePower> elitePowers,
-                            double health,
-                            UUID phaseBossUUID) {
+                            double health) {
         super(livingEntity,
                 mobLevel,
                 customBossConfigFields.getName(),
                 elitePowers,
                 CreatureSpawnEvent.SpawnReason.CUSTOM,
                 health,
-                phaseBossUUID);
+                //todo: phase bosses currently have to be persistent for safety reasons, this might not adapt to every setup
+                true);
         initializeCustomBoss(customBossConfigFields);
         this.setHealth(health * getMaxHealth());
     }
@@ -224,7 +226,6 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
         this.customBossConfigFields = customBossConfigFields;
         setEquipment();
         setBaby();
-        setPersistent();
         startBossTrails();
         setVanillaLoot();
         parseUniqueLootList();
@@ -249,6 +250,7 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
         setFrozen();
         resetMaxHealth();
         setHealth(getHealth());
+        setName(customBossConfigFields.getName());
     }
 
     private void setBaby() {
@@ -269,15 +271,6 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
                 player.sendMessage(ChatColorConverter.convert(customBossConfigFields.getSpawnMessage()));
         if (customBossConfigFields.getAnnouncementPriority() < 3) return;
         new DiscordSRVAnnouncement(ChatColorConverter.convert(customBossConfigFields.getSpawnMessage()));
-    }
-
-    private void setPersistent() {
-        super.setPersistent(customBossConfigFields.getIsPersistent());
-        if (customBossConfigFields.getIsPersistent()) {
-            TrackedEntity trackedEntity = TrackedEntity.trackedEntities.get(uuid);
-            trackedEntity.removeWhenFarAway = false;
-            TrackedEntity.trackedEntities.put(uuid, trackedEntity);
-        }
     }
 
     private void setDisguise() {
@@ -346,6 +339,13 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
             getLivingEntity().getEquipment().setBoots(customBossConfigFields.getBoots());
             getLivingEntity().getEquipment().setItemInMainHand(customBossConfigFields.getMainHand());
             getLivingEntity().getEquipment().setItemInOffHand(customBossConfigFields.getOffHand());
+            if (getLivingEntity().getEquipment().getHelmet() != null) {
+                ItemMeta helmetMeta = getLivingEntity().getEquipment().getHelmet().getItemMeta();
+                if (helmetMeta != null) {
+                    helmetMeta.setUnbreakable(true);
+                    getLivingEntity().getEquipment().getHelmet().setItemMeta(helmetMeta);
+                }
+            }
         } catch (Exception ex) {
             new WarningMessage("Tried to assign a material slot to an invalid entity! Boss is from file" + customBossConfigFields.getFileName());
         }
@@ -454,8 +454,13 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
         softRemove();
         if (escapeMechanism != null) escapeMechanism.cancel();
         trackableCustomBosses.remove(this);
-        if (simplePersistentEntity != null) simplePersistentEntity.remove();
-        for (CustomBossBossBar customBossBossBar : customBossBossBars) customBossBossBar.remove();
+        if (simplePersistentEntity != null) {
+            //This manually dereferences simple persistent entities and doesn't remove them to avoid async conflicts
+            simplePersistentEntity.customBossEntity = null;
+            simplePersistentEntity = null;
+        }
+        for (CustomBossBossBar customBossBossBar : customBossBossBars) customBossBossBar.remove(true);
+        customBossBossBars.clear();
         super.remove(removeEntity);
     }
 
@@ -475,9 +480,11 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
     public void chunkLoad() {
         setNewLivingEntity(persistentLocation);
         //This bypasses the spawn event caller, since having it trigger the spawn message and so on every time a chunk gets loaded would be bad
-        new EliteEntityTracker(this, getPersistent(), true);
+        new EliteEntityTracker(this, getPersistent());
         customBossTrail.restartTrails();
         setDisguise();
+        if (regionalBossEntity != null)
+            regionalBossEntity.chunkLoad();
     }
 
     public SimplePersistentEntity simplePersistentEntity;
@@ -497,25 +504,13 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
         }
 
         //For some reason sometimes the living entities are nullified on chunk unload
-        advancedGetEntity();
-        if (getLivingEntity() == null) {
-            if (regionalBossEntity != null) {
+        if (advancedGetEntity() == null)
+            if (regionalBossEntity != null)
                 persistentLocation = regionalBossEntity.spawnLocation;
-                    /*
-                    This is a specific case where this Custom Boss is a regional boss entity, the Living Entity became
-                    null while it was still meant to be alive, and the location that the boss is mean to spawn in is still
-                    loaded, meaning that it will instantly respawn at its spawn point.
-                     */
-                if (ChunkLocationChecker.locationIsLoaded(persistentLocation)) {
-                    super.remove(true);
-                    customBossEntity.regionalBossEntity.spawnRegionalBoss();
-                    return;
-                }
-            } else {
-                new WarningMessage("Custom Boss Entity " + customBossConfigFields.getFileName() + " was null by the time the chunk unloaded!");
-                new WarningMessage("HP was: " + getHealth());
-            }
-        } else persistentLocation = getLivingEntity().getLocation();
+            else
+                new WarningMessage("Failed to register persistent location before chunk unload! Boss: " + getName());
+        else
+            persistentLocation = getLivingEntity().getLocation();
 
         simplePersistentEntity = new SimplePersistentEntity(this);
         softRemove();

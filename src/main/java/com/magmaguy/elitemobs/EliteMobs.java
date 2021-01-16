@@ -30,7 +30,6 @@ import com.magmaguy.elitemobs.items.customenchantments.CustomEnchantment;
 import com.magmaguy.elitemobs.items.customitems.CustomItem;
 import com.magmaguy.elitemobs.items.potioneffects.PlayerPotionEffects;
 import com.magmaguy.elitemobs.mobconstructor.custombosses.AbstractRegionalEntity;
-import com.magmaguy.elitemobs.mobconstructor.custombosses.PhaseBossEntity;
 import com.magmaguy.elitemobs.mobconstructor.custombosses.RegionalBossEntity;
 import com.magmaguy.elitemobs.mobconstructor.mobdata.PluginMobProperties;
 import com.magmaguy.elitemobs.mobs.passive.EggRunnable;
@@ -45,7 +44,6 @@ import com.magmaguy.elitemobs.thirdparty.bstats.CustomCharts;
 import com.magmaguy.elitemobs.thirdparty.placeholderapi.Placeholders;
 import com.magmaguy.elitemobs.thirdparty.worldguard.WorldGuardCompatibility;
 import com.magmaguy.elitemobs.treasurechest.TreasureChest;
-import com.magmaguy.elitemobs.utils.DeveloperMessage;
 import com.magmaguy.elitemobs.utils.InfoMessage;
 import com.magmaguy.elitemobs.utils.NonSolidBlockTypes;
 import com.magmaguy.elitemobs.utils.WarningMessage;
@@ -86,7 +84,6 @@ public class EliteMobs extends JavaPlugin {
         if (Bukkit.getServer().spigot().getConfig().getDouble("settings.attribute.maxHealth.max") < Double.MAX_VALUE) {
             Bukkit.getServer().spigot().getConfig().set("settings.attribute.maxHealth.max", Double.MAX_VALUE);
             try {
-                new DeveloperMessage(MetadataHandler.PLUGIN.getDataFolder().getAbsolutePath().replace("/plugins/EliteMobs", ""));
                 File file = new File(MetadataHandler.PLUGIN.getDataFolder().getAbsolutePath().replace("plugins/EliteMobs", "") + "spigot.yml");
                 Bukkit.getServer().spigot().getConfig().save(file);
                 new InfoMessage("New default max health set correctly!");
@@ -245,7 +242,6 @@ public class EliteMobs extends JavaPlugin {
         validWorldList.clear();
         zoneBasedSpawningWorlds.clear();
         RegionalBossEntity.getRegionalBossEntitySet().clear();
-        PhaseBossEntity.phaseBosses.clear();
         CustomBossConfigFields.getRegionalElites().clear();
         CustomBossConfigFields.getNaturallySpawnedElites().clear();
         CustomEnchantment.getCustomEnchantments().clear();
