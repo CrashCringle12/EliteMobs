@@ -3,6 +3,8 @@ package com.magmaguy.elitemobs.mobconstructor.custombosses;
 import com.magmaguy.elitemobs.ChatColorConverter;
 import com.magmaguy.elitemobs.MetadataHandler;
 import com.magmaguy.elitemobs.api.EliteMobEnterCombatEvent;
+import com.magmaguy.elitemobs.config.ConfigValues;
+import com.magmaguy.elitemobs.config.EventsConfig;
 import com.magmaguy.elitemobs.config.MobCombatSettingsConfig;
 import com.magmaguy.elitemobs.config.custombosses.CustomBossConfigFields;
 import com.magmaguy.elitemobs.config.custombosses.CustomBossesConfig;
@@ -77,7 +79,7 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
             WorldGuardSpawnEventBypasser.forceSpawn();
             return (LivingEntity) location.getWorld().spawnEntity(location, EntityType.valueOf(customBossConfigFields.getEntityType()));
         } catch (Exception ex) {
-            new WarningMessage("Failed to spawn a Custom Boss' living entity!");
+            new WarningMessage("Failed to spawn a Custom Boss' living entity! Is the region protected against spawns? Custom boss: " + customBossConfigFields.getFileName() + " entry: " + location.toString());
             return null;
         }
     }
@@ -97,6 +99,22 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
                 livingEntity,
                 mobLevel,
                 ElitePowerParser.parsePowers(customBossMobsConfigAttributes.getPowers()));
+    }
+
+    /**
+     * Method used by commands
+     */
+    public static CustomBossEntity constructCustomBoss(String fileName,
+                                                       Location location) {
+        CustomBossConfigFields customBossConfigFields = CustomBossesConfig.getCustomBoss(fileName);
+        LivingEntity livingEntity = generateLivingEntity(location, customBossConfigFields);
+        if (livingEntity == null) return null;
+
+        return new CustomBossEntity(
+                customBossConfigFields,
+                livingEntity,
+                customBossConfigFields.getLevel(),
+                ElitePowerParser.parsePowers(customBossConfigFields.getPowers()));
     }
 
     /**
@@ -264,7 +282,7 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
     private void spawnMessage() {
         if (customBossConfigFields.getSpawnMessage() == null) return;
         if (customBossConfigFields.getAnnouncementPriority() < 1) return;
-        if (customBossConfigFields.getAnnouncementPriority() == 1)
+        if (customBossConfigFields.getAnnouncementPriority() == 1 && !ConfigValues.eventsConfig.getBoolean(EventsConfig.ANNOUNCEMENT_BROADCAST_WORLD_ONLY))
             Bukkit.broadcastMessage(ChatColorConverter.convert(customBossConfigFields.getSpawnMessage()));
         else
             for (Player player : getLivingEntity().getWorld().getPlayers())
@@ -461,7 +479,9 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
         }
         for (CustomBossBossBar customBossBossBar : customBossBossBars) customBossBossBar.remove(true);
         customBossBossBars.clear();
-        super.remove(removeEntity);
+        if (removeEntity)
+            if (getLivingEntity() != null)
+                getLivingEntity().remove();
     }
 
     /**

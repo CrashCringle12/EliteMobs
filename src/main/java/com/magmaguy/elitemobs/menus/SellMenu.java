@@ -1,4 +1,4 @@
-package com.magmaguy.elitemobs.commands.shops;
+package com.magmaguy.elitemobs.menus;
 
 import com.magmaguy.elitemobs.ChatColorConverter;
 import com.magmaguy.elitemobs.api.EliteMobsItemDetector;
@@ -9,7 +9,6 @@ import com.magmaguy.elitemobs.config.menus.premade.SellMenuConfig;
 import com.magmaguy.elitemobs.economy.EconomyHandler;
 import com.magmaguy.elitemobs.items.ItemWorthCalculator;
 import com.magmaguy.elitemobs.items.customenchantments.SoulbindEnchantment;
-import com.magmaguy.elitemobs.menus.EliteMenu;
 import com.magmaguy.elitemobs.utils.ItemStackGenerator;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -115,7 +114,7 @@ public class SellMenu extends EliteMenu implements Listener {
 
             //Do transfer
             shopInventory.addItem(currentItem);
-            playerInventory.remove(currentItem);
+            playerInventory.clear(event.getSlot());
 
             //Update worth of things to be sold, now using cached prices
             event.getInventory().setItem(SellMenuConfig.confirmSlot, updateConfirmButton(calculateShopValue(shopInventory, player)));

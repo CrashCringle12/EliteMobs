@@ -133,9 +133,6 @@ public class EliteMobs extends JavaPlugin {
         //Start the repeating tasks such as scanners
         launchRunnables();
 
-        //Commands
-        this.getCommand("elitemobs").setExecutor(new CommandHandler());
-
         //launch events
         EventLauncher eventLauncher = new EventLauncher();
         eventLauncher.eventRepeatingTask();
@@ -208,6 +205,8 @@ public class EliteMobs extends JavaPlugin {
             }
         }
 
+        //Commands
+        new CommandHandler();
     }
 
     @Override
@@ -242,7 +241,7 @@ public class EliteMobs extends JavaPlugin {
         validWorldList.clear();
         zoneBasedSpawningWorlds.clear();
         RegionalBossEntity.getRegionalBossEntitySet().clear();
-        CustomBossConfigFields.getRegionalElites().clear();
+        CustomBossConfigFields.regionalElites.clear();
         CustomBossConfigFields.getNaturallySpawnedElites().clear();
         CustomEnchantment.getCustomEnchantments().clear();
         Minidungeon.minidungeons.clear();
