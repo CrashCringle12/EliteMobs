@@ -7,7 +7,6 @@ import com.magmaguy.elitemobs.config.custombosses.CustomBossConfigFields;
 import com.magmaguy.elitemobs.entitytracker.EntityTracker;
 import com.magmaguy.elitemobs.mobconstructor.SimplePersistentEntityInterface;
 import com.magmaguy.elitemobs.powers.bosspowers.SpiritWalk;
-import com.magmaguy.elitemobs.utils.NonSolidBlockTypes;
 import com.magmaguy.elitemobs.utils.WarningMessage;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
@@ -64,18 +63,19 @@ public class RegionalBossEntity implements SimplePersistentEntityInterface {
                 false);
 
         //todo: test this in intentionally protected areas
-        if (this.customBossEntity == null || customBossEntity.getLivingEntity() == null)
-            new WarningMessage("Regional boss " + customBossConfigFields.getFileConfiguration().getName() +
+        if (this.customBossEntity == null || customBossEntity.getLivingEntity() == null) {
+            new WarningMessage("Regional boss " + customBossConfigFields.getFile().getName() +
                     " failed to spawn in location " + spawnLocation.toString() + " ! Does the region prevent mobs" +
                     " from spawning?");
+            return;
+        }
 
         //Warn admins about bad spawn location
-        if (!NonSolidBlockTypes.isNonSolidBlock(spawnLocation.getBlock().getType()))
+        if (!spawnLocation.getBlock().isPassable())
             new WarningMessage("Warning: Location " + abstractRegionalEntity.getRawString() + " for boss " +
                     customBossConfigFields.getFileName() + " seems to be inside of a solid block!");
 
         this.customBossEntity.regionalBossEntity = this;
-        this.customBossEntity.setPersistent(true);
 
         checkLeash();
         customBossEntity.getLivingEntity().addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 3));

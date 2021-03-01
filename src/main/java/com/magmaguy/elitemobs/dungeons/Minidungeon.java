@@ -3,14 +3,14 @@ package com.magmaguy.elitemobs.dungeons;
 import com.magmaguy.elitemobs.ChatColorConverter;
 import com.magmaguy.elitemobs.MetadataHandler;
 import com.magmaguy.elitemobs.api.internal.NewMinidungeonRelativeBossLocationEvent;
-import com.magmaguy.elitemobs.config.custombosses.CustomBossConfigFields;
-import com.magmaguy.elitemobs.config.custombosses.CustomBossesConfig;
-import com.magmaguy.elitemobs.config.dungeonpackager.DungeonPackagerConfigFields;
 import com.magmaguy.elitemobs.dungeons.worlds.MinidungeonWorldLoader;
 import com.magmaguy.elitemobs.mobconstructor.custombosses.AbstractRegionalEntity;
 import com.magmaguy.elitemobs.mobconstructor.custombosses.RegionalBossEntity;
 import com.magmaguy.elitemobs.powerstances.GenericRotationMatrixMath;
 import com.magmaguy.elitemobs.thirdparty.worldguard.WorldGuardCompatibility;
+import com.magmaguy.elitemobs.config.custombosses.CustomBossConfigFields;
+import com.magmaguy.elitemobs.config.custombosses.CustomBossesConfig;
+import com.magmaguy.elitemobs.config.dungeonpackager.DungeonPackagerConfigFields;
 import com.magmaguy.elitemobs.utils.WarningMessage;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -131,7 +131,10 @@ public class Minidungeon {
         checkIfBossesInstalled();
 
         if (isInstalled)
-            this.teleportLocation = dungeonPackagerConfigFields.getAnchorPoint().clone().add(dungeonPackagerConfigFields.getTeleportOffset());
+            this.teleportLocation = GenericRotationMatrixMath.rotateVectorYAxis(
+                    dungeonPackagerConfigFields.getRotation(),
+                    dungeonPackagerConfigFields.getAnchorPoint(),
+                    dungeonPackagerConfigFields.getTeleportOffset()).toLocation(dungeonPackagerConfigFields.getAnchorPoint().getWorld());
     }
 
     /**
@@ -251,7 +254,12 @@ public class Minidungeon {
             }
 
             private double vectorGetter(String rawLocationString, int position) {
-                return Double.parseDouble(rawLocationString.split(":")[1].split(",")[position]);
+                try {
+                    return Double.parseDouble(rawLocationString.split(":")[1].split(",")[position]);
+                } catch (Exception e) {
+                    new WarningMessage("Failed to parse relative location for " + rawLocationString);
+                    return 0;
+                }
             }
         }
     }
@@ -302,7 +310,7 @@ public class Minidungeon {
     private void loadWorld(Player player) {
         try {
             world = MinidungeonWorldLoader.runtimeLoadWorld(this);
-            WorldGuardCompatibility.protectWorldMinidugeonArea(world.getSpawnLocation());
+            WorldGuardCompatibility.protectWorldMinidugeonArea(world.getSpawnLocation(), this);
             player.teleport(world.getSpawnLocation());
             player.sendMessage("Minidungeon " + dungeonPackagerConfigFields.getWorldName() +
                     " has been loaded! The world is now loaded and the regional bosses are up.");
@@ -383,10 +391,13 @@ public class Minidungeon {
                     dungeonPackagerConfigFields.getRotation(),
                     dungeonPackagerConfigFields.getAnchorPoint(),
                     dungeonPackagerConfigFields.getCorner2());
-            WorldGuardCompatibility.defineMinidungeon(realCorner1, realCorner2, dungeonPackagerConfigFields.getAnchorPoint(), dungeonPackagerConfigFields.getSchematicName());
+            WorldGuardCompatibility.defineMinidungeon(realCorner1, realCorner2, dungeonPackagerConfigFields.getAnchorPoint(), dungeonPackagerConfigFields.getSchematicName(), this);
         }
 
-        teleportLocation = dungeonPackagerConfigFields.getAnchorPoint().clone().add(dungeonPackagerConfigFields.getTeleportOffset());
+        teleportLocation = GenericRotationMatrixMath.rotateVectorYAxis(
+                dungeonPackagerConfigFields.getRotation(),
+                dungeonPackagerConfigFields.getAnchorPoint(),
+                dungeonPackagerConfigFields.getTeleportOffset()).toLocation(player.getWorld());
 
         for (int i = 0; i < 20; i++)
             player.sendMessage("");

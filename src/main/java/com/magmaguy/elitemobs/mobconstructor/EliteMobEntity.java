@@ -4,23 +4,25 @@ import com.magmaguy.elitemobs.ChatColorConverter;
 import com.magmaguy.elitemobs.EliteMobs;
 import com.magmaguy.elitemobs.MetadataHandler;
 import com.magmaguy.elitemobs.api.internal.RemovalReason;
+import com.magmaguy.elitemobs.items.MobTierCalculator;
+import com.magmaguy.elitemobs.mobconstructor.custombosses.CustomBossEntity;
+import com.magmaguy.elitemobs.mobconstructor.custombosses.PhaseBossEntity;
+import com.magmaguy.elitemobs.mobconstructor.custombosses.RegionalBossEntity;
+import com.magmaguy.elitemobs.mobconstructor.mobdata.aggressivemobs.EliteMobProperties;
 import com.magmaguy.elitemobs.combatsystem.CombatSystem;
 import com.magmaguy.elitemobs.combatsystem.antiexploit.AntiExploitMessage;
 import com.magmaguy.elitemobs.config.AntiExploitConfig;
 import com.magmaguy.elitemobs.config.DefaultConfig;
 import com.magmaguy.elitemobs.config.MobCombatSettingsConfig;
 import com.magmaguy.elitemobs.config.powers.PowersConfig;
+import com.magmaguy.elitemobs.entitytracker.EliteEntityTracker;
 import com.magmaguy.elitemobs.entitytracker.EntityTracker;
-import com.magmaguy.elitemobs.items.MobTierCalculator;
-import com.magmaguy.elitemobs.mobconstructor.custombosses.CustomBossEntity;
-import com.magmaguy.elitemobs.mobconstructor.custombosses.PhaseBossEntity;
-import com.magmaguy.elitemobs.mobconstructor.custombosses.RegionalBossEntity;
-import com.magmaguy.elitemobs.mobconstructor.mobdata.aggressivemobs.EliteMobProperties;
 import com.magmaguy.elitemobs.powers.ElitePower;
 import com.magmaguy.elitemobs.powers.MajorPower;
 import com.magmaguy.elitemobs.powers.MinorPower;
 import com.magmaguy.elitemobs.powerstances.MajorPowerPowerStance;
 import com.magmaguy.elitemobs.powerstances.MinorPowerPowerStance;
+import com.magmaguy.elitemobs.thirdparty.libsdisguises.DisguiseEntity;
 import com.magmaguy.elitemobs.thirdparty.worldguard.WorldGuardCompatibility;
 import com.magmaguy.elitemobs.thirdparty.worldguard.WorldGuardFlagChecker;
 import com.magmaguy.elitemobs.thirdparty.worldguard.WorldGuardSpawnEventBypasser;
@@ -65,7 +67,7 @@ public class EliteMobEntity {
     This just defines default behavior
      */
     private boolean hasCustomPowers = false;
-    private Boolean isPersistent = true;
+    private Boolean isPersistent = false;
     private boolean hasVanillaLoot = true;
     private boolean hasEliteLoot = true;
     private CreatureSpawnEvent.SpawnReason spawnReason;
@@ -233,6 +235,8 @@ public class EliteMobEntity {
         this.livingEntity = livingEntity;
         this.entityType = livingEntity.getType();
 
+        setPersistent(isPersistent);
+
         //Register UUID to be used in trackers
         this.uuid = livingEntity.getUniqueId();
 
@@ -252,9 +256,8 @@ public class EliteMobEntity {
         livingEntity.getEquipment().setBootsDropChance(0);
 
         if (!VersionChecker.currentVersionIsUnder(1, 15))
-            if (livingEntity instanceof Bee) {
+            if (livingEntity instanceof Bee)
                 ((Bee) livingEntity).setCannotEnterHiveTicks(Integer.MAX_VALUE);
-            }
 
         setMaxHealth();
 
@@ -263,6 +266,8 @@ public class EliteMobEntity {
             wolf.setAngry(true);
             wolf.setBreed(false);
         }
+
+        this.getLivingEntity().setRemoveWhenFarAway(!isPersistent);
 
         //Stop creation if the creation was cancelled in the spawn event
         return EntityTracker.registerEliteMob(this);
@@ -278,8 +283,7 @@ public class EliteMobEntity {
                 eliteMobProperties.getName().replace(
                         "$level", eliteLevel + ""));
         livingEntity.setCustomName(this.name);
-        if (DefaultConfig.alwaysShowNametags)
-            livingEntity.setCustomNameVisible(true);
+        livingEntity.setCustomNameVisible(DefaultConfig.alwaysShowNametags);
     }
 
     /**
@@ -288,11 +292,23 @@ public class EliteMobEntity {
      * @param name String which defines the display name
      */
     public void setName(String name) {
-        String parsedName = name.replace("$level", this.eliteLevel + "");
+        String parsedName = name.replace("$level", this.eliteLevel + "")
+                .replace("$normalLevel", ChatColorConverter.convert("&2[&a" + this.eliteLevel + "&2]&f"))
+                .replace("$minibossLevel", ChatColorConverter.convert("&6〖&e" + this.eliteLevel + "&6〗&f"))
+                .replace("$bossLevel", ChatColorConverter.convert("&4『&c" + this.eliteLevel + "&4』&f"))
+                .replace("$reinforcementLevel", ChatColorConverter.convert("&8〔&7") + this.eliteLevel + "&8〕&f")
+                .replace("$eventBossLevel", ChatColorConverter.convert("&4「&c" + this.eliteLevel + "&4」&f"));
         this.name = ChatColorConverter.convert(parsedName);
         this.getLivingEntity().setCustomName(this.name);
-        if (DefaultConfig.alwaysShowNametags)
-            livingEntity.setCustomNameVisible(true);
+        livingEntity.setCustomNameVisible(DefaultConfig.alwaysShowNametags);
+        if (customBossEntity != null)
+            DisguiseEntity.setDisguiseNameVisibility(DefaultConfig.alwaysShowNametags, livingEntity);
+    }
+
+    public void setNameVisible(boolean isVisible) {
+        livingEntity.setCustomNameVisible(isVisible);
+        if (customBossEntity != null)
+            DisguiseEntity.setDisguiseNameVisibility(isVisible, livingEntity);
     }
 
     /**
@@ -535,8 +551,9 @@ public class EliteMobEntity {
     public void setNewLivingEntity(Location location) {
         WorldGuardSpawnEventBypasser.forceSpawn();
         this.livingEntity = (LivingEntity) location.getWorld().spawnEntity(location, entityType);
-        this.livingEntity.setRemoveWhenFarAway(!this.isPersistent);
         this.uuid = livingEntity.getUniqueId();
+        livingEntity.setRemoveWhenFarAway(!isPersistent);
+        new EliteEntityTracker(this, isPersistent);
         if (customBossEntity != null)
             customBossEntity.silentCustomBossInitialization();
     }
@@ -687,10 +704,8 @@ public class EliteMobEntity {
      * @param bool Whether the Elite Mob will unload when far away.
      */
     public void setPersistent(Boolean bool) {
-        this.getLivingEntity().setRemoveWhenFarAway(false);
         if (bool != null) {
             this.isPersistent = bool;
-            //    TrackedEntity.trackedEntities.get(getLivingEntity().getUniqueId()).removeWhenFarAway = !this.isPersistent;
         } else {
             this.isPersistent = false;
         }

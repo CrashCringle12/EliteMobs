@@ -1,8 +1,9 @@
 package com.magmaguy.elitemobs;
 
 /*
-  * Created by MagmaGuy on 07/10/2016.
+ * Created by MagmaGuy on 07/10/2016.
  */
+
 import com.magmaguy.elitemobs.api.EliteMobDamagedByPlayerEvent;
 import com.magmaguy.elitemobs.commands.CommandHandler;
 import com.magmaguy.elitemobs.config.*;
@@ -80,43 +81,42 @@ public class EliteMobs extends JavaPlugin {
         Bukkit.getLogger().info("|  __|| |     | |   | | |  __|| |\\/| | | | | ___ \\ `--. \\");
         Bukkit.getLogger().info("| |___| |_____| |_  | | | |___| |  | \\ \\_/ / |_/ //\\__/ /");
         Bukkit.getLogger().info("\\____/\\_____/\\___/  \\_/ \\____/\\_|  |_/\\___/\\____/ \\____/");
-        Bukkit.getLogger().info("By MagmaGuy");
-        if (Bukkit.getServer().spigot().getConfig().getDouble("settings.attribute.maxHealth.max") < Double.MAX_VALUE) {
-            Bukkit.getServer().spigot().getConfig().set("settings.attribute.maxHealth.max", Double.MAX_VALUE);
+        MetadataHandler.PLUGIN = this;
+        Bukkit.getLogger().info("By MagmaGuy - v. " + MetadataHandler.PLUGIN.getDescription().getVersion());
+
+        if (Bukkit.getServer().spigot().getConfig().getDouble("settings.attribute.maxHealth.max") < 100000000) {
+            Bukkit.getServer().spigot().getConfig().set("settings.attribute.maxHealth.max", 100000000);
             try {
-                File file = new File(MetadataHandler.PLUGIN.getDataFolder().getAbsolutePath().replace("plugins/EliteMobs", "") + "spigot.yml");
-                Bukkit.getServer().spigot().getConfig().save(file);
+                File spigotConfigContainer = new File(Paths.get(MetadataHandler.PLUGIN.getDataFolder().getParentFile().getCanonicalFile().getParentFile().toString() + "/spigot.yml").toString());
+                Bukkit.getServer().spigot().getConfig().save(spigotConfigContainer);
                 new InfoMessage("New default max health set correctly!");
             } catch (IOException e) {
-                new WarningMessage("Failed to save max health value! For the plugin to work correctly, you should increase your max health on the spigot.yml config file to " + Double.MAX_VALUE);
+                new WarningMessage("Failed to save max health value! For the plugin to work correctly, you should increase your max health on the spigot.yml config file to " + 100000000);
             }
         }
+
 
         //Remove entities that should not exist
         CrashFix.startupCheck();
 
         /*
-         New config loading
+        New config loading
          */
         initializeConfigs();
 
-        /*
-         Load plugin worlds
-         */
-        CustomWorldLoading.startupWorldInitialization();
 
-        if (worldguardIsEnabled) {
+
+        if (worldguardIsEnabled)
             Bukkit.getLogger().info("[EliteMobs] WorldGuard compatibility is enabled!");
-        } else {
+        else
             Bukkit.getLogger().warning("[EliteMobs] WorldGuard compatibility is not enabled!");
-        }
 
         //Enable Vault
         try {
             VaultCompatibility.vaultSetup();
         } catch (Exception e) {
-            Bukkit.getLogger().warning("[EliteMobs] Something went wrong with the vault configuration - your Vault "
-                    + "version is probably not compatible with this EliteMobs version. Please contact the dev about this error.");
+            Bukkit.getLogger().warning("[EliteMobs] Something went wrong with the vault configuration - your Vault " +
+                    "version is probably not compatible with this EliteMobs version. Please contact the dev about this error.");
             VaultCompatibility.VAULT_ENABLED = false;
         }
 
@@ -141,42 +141,35 @@ public class EliteMobs extends JavaPlugin {
         EliteMobDamagedByPlayerEvent.EliteMobDamagedByPlayerEventFilter.launchInternalClock();
 
         /*
-         Initialize mob values
+        Initialize mob values
          */
         PluginMobProperties.initializePluginMobValues();
 
         /*
-         Cache animation vectors
+        Cache animation vectors
          */
         MinorPowerStanceMath.initializeVectorCache();
         MajorPowerStanceMath.initializeVectorCache();
 
         /*
-         Scan for loaded SuperMobs
+        Scan for loaded SuperMobs
          */
         PassiveEliteMobDeathHandler.SuperMobScanner.scanSuperMobs();
 
         /*
-         Check for new plugin version
+        Check for new plugin version
          */
         VersionChecker.updateComparer();
-        if (!VersionChecker.pluginIsUpToDate) {
+        if (!VersionChecker.pluginIsUpToDate)
             this.getServer().getPluginManager().registerEvents(new VersionWarner(), this);
-        }
 
         /*
-         Initialize anticheat block values
-         */
-        NonSolidBlockTypes.initializeNonSolidBlocks();
 
-        /*
-         Launch quests
+        Launch quests
          */
         //QuestRefresher.generateNewQuestMenus();
-        /*
-         Initialize NPCs
-         */
-        new NPCInitializer();
+
+
 
         // Small check to make sure that PlaceholderAPI is installed
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
@@ -190,20 +183,47 @@ public class EliteMobs extends JavaPlugin {
         //Initialize custom charts
         new CustomCharts();
 
+        //Imports custom configurations and mindungeons from the import folder
+        ConfigurationImporter.initializeConfigs();
+
+        //Import custom items after potentially importing new items
+        CustomLootConfig.initializeConfigs();
+        CustomItem.initializeCustomItems();
+        LootTables.initialize();
+
         //Load minidungeons, most of all load the worlds of minidungeons
         DungeonPackagerConfig.initializeConfigs();
+        //Load Adventurer's Guild
+        if (AdventurersGuildConfig.guildWorldIsEnabled) {
+            try {
+                CustomWorldLoading.startupWorldInitialization();
+                AdventurersGuildCommand.defineTeleportLocation();
+                if (AdventurersGuildConfig.guildWorldLocation == null)
+                    AdventurersGuildConfig.toggleGuildInstall();
+            } catch (Exception e) {
+                AdventurersGuildConfig.toggleGuildInstall();
+                new WarningMessage("Failed to initialize the Adventurer's Guild Hub! It is now disabled. You can try to" +
+                        "reenable it in /em setup");
+            }
+        }
+
+        //new NPCInitializer();
+
         //Load all regional bosses
         CustomBossesConfig.initializeConfigs();
         //Find the stats of bosses in minidungeons
         for (Minidungeon minidungeon : Minidungeon.minidungeons.values()) {
-            if (minidungeon.dungeonPackagerConfigFields.getDungeonLocationType().equals(DungeonPackagerConfigFields.DungeonLocationType.WORLD)) {
+            if (minidungeon.dungeonPackagerConfigFields.getDungeonLocationType().equals(DungeonPackagerConfigFields.DungeonLocationType.WORLD))
                 minidungeon.quantifyWorldBosses();
-            } else if (minidungeon.dungeonPackagerConfigFields.getDungeonLocationType().equals(DungeonPackagerConfigFields.DungeonLocationType.SCHEMATIC)) {
+            else if (minidungeon.dungeonPackagerConfigFields.getDungeonLocationType().equals(DungeonPackagerConfigFields.DungeonLocationType.SCHEMATIC)) {
                 minidungeon.quantifySchematicBosses();
                 //Due to boot order this needs to run after the minidungeons and the custom bosses are initialized
                 minidungeon.completeSchematicMinidungeonInitialization();
             }
         }
+
+        //Initialize npcs
+        new NPCInitializer();
 
         //Commands
         new CommandHandler();
@@ -216,15 +236,13 @@ public class EliteMobs extends JavaPlugin {
         try {
             worldguardIsEnabled = WorldGuardCompatibility.initialize();
         } catch (NoClassDefFoundError | IllegalStateException ex) {
-            Bukkit.getLogger().warning("[EliteMobs] Error loading WorldGuard. EliteMob-specific flags will not work."
-                    + " Except if you just reloaded the plugin, in which case they will totally work.");
+            Bukkit.getLogger().warning("[EliteMobs] Error loading WorldGuard. EliteMob-specific flags will not work." +
+                    " Except if you just reloaded the plugin, in which case they will totally work.");
             worldguardIsEnabled = false;
         }
-        if (!worldguardIsEnabled) {
-            if (Bukkit.getPluginManager().getPlugin("WorldGuard") != null) {
+        if (!worldguardIsEnabled)
+            if (Bukkit.getPluginManager().getPlugin("WorldGuard") != null)
                 worldguardIsEnabled = true;
-            }
-        }
 
     }
 
@@ -246,9 +264,8 @@ public class EliteMobs extends JavaPlugin {
         CustomEnchantment.getCustomEnchantments().clear();
         Minidungeon.minidungeons.clear();
 
-        if (this.placeholders != null) {
+        if (this.placeholders != null)
             ((Placeholders) placeholders).unregister();
-        }
 
         HandlerList.unregisterAll(MetadataHandler.PLUGIN);
 
@@ -277,8 +294,7 @@ public class EliteMobs extends JavaPlugin {
         MenusConfig.initializeConfigs();
         PowersConfig.initializeConfigs();
         MobPropertiesConfig.initializeConfigs();
-        CustomLootConfig.initializeConfigs();
-        CustomItem.initializeCustomItems();
+
         CustomEnchantment.initializeCustomEnchantments();
         CustomTreasureChestsConfig.initializeConfigs();
         TreasureChest.initializeTreasureChest();
@@ -286,31 +302,29 @@ public class EliteMobs extends JavaPlugin {
         CommandsConfig.initializeConfigs();
         EventsConfig.initializeConfigs();
         DiscordSRVConfig.initializeConfig();
+        ReadMeForTranslationsConfig.initialize();
     }
 
     public static void worldScanner() {
-        for (World world : Bukkit.getWorlds()) {
+        for (World world : Bukkit.getWorlds())
             if (ValidWorldsConfig.fileConfiguration.getBoolean("Valid worlds." + world.getName())) {
                 validWorldList.add(world);
-                if (ValidWorldsConfig.fileConfiguration.getBoolean("Zone-based elitemob spawning worlds." + world.getName())) {
+                if (ValidWorldsConfig.fileConfiguration.getBoolean("Zone-based elitemob spawning worlds." + world.getName()))
                     zoneBasedSpawningWorlds.add(world);
-                }
                 if (ValidWorldsConfig.fileConfiguration.getBoolean("Nightmare mode worlds." + world.getName())) {
                     nightmareWorlds.add(world);
                     DaylightWatchdog.preventDaylight(world);
                 }
             }
-        }
 
     }
 
     /*
-     Repeating tasks that run as long as the server is on
+    Repeating tasks that run as long as the server is on
      */
     private void launchRunnables() {
-        if (!zoneBasedSpawningWorlds.isEmpty()) {
+        if (!zoneBasedSpawningWorlds.isEmpty())
             Grid.initializeGrid();
-        }
         int eggTimerInterval = 20 * 60 * 10 / DefaultConfig.superMobStackAmount;
         new PlayerPotionEffects();
         QuestsMenu.questRefresher();

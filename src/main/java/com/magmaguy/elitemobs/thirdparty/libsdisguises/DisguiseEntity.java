@@ -4,6 +4,8 @@ import com.magmaguy.elitemobs.config.custombosses.CustomBossConfigFields;
 import com.magmaguy.elitemobs.utils.WarningMessage;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.*;
+import me.libraryaddict.disguise.disguisetypes.watchers.PlayerWatcher;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 
 public class DisguiseEntity {
@@ -69,24 +71,36 @@ public class DisguiseEntity {
         miscDisguise.setDynamicName(true);
         miscDisguise.setEntity(entity);
         miscDisguise.startDisguise();
-
-
     }
 
     private static void customDisguise(String customDisguise, Entity entity, CustomBossConfigFields customBossConfigFields) {
         Disguise disguise = DisguiseAPI.getCustomDisguise(customDisguise);
         try {
             if (disguise == null)
-                if (customBossConfigFields.getCustomDisguiseData() != null)
+                if (customBossConfigFields.getCustomDisguiseData() != null) {
                     DisguiseAPI.addCustomDisguise(customDisguise, customBossConfigFields.getCustomDisguiseData());
+                    disguise = DisguiseAPI.getCustomDisguise(customDisguise);
+                }
+            if (disguise == null)
+                throw new NullPointerException();
             disguise.setEntity(entity);
             disguise.setDisguiseName(entity.getCustomName());
             disguise.setDynamicName(true);
             disguise.startDisguise();
         } catch (Exception ex) {
             new WarningMessage("Failed to set custom disguise for boss " + customBossConfigFields.getFileName() + " !");
+            new WarningMessage("Does the disguise exist?");
             ex.printStackTrace();
         }
+    }
+
+    public static void setDisguiseNameVisibility(boolean disguiseNameVisibility, Entity entity) {
+        if (!Bukkit.getPluginManager().isPluginEnabled("LibsDisguises")) return;
+        Disguise disguise = DisguiseAPI.getDisguise(entity);
+        if (disguise == null) return;
+        if (!(disguise.getWatcher() instanceof PlayerWatcher)) return;
+        PlayerWatcher playerWatcher = (PlayerWatcher) disguise.getWatcher();
+        playerWatcher.setCustomNameVisible(disguiseNameVisibility);
     }
 
 }

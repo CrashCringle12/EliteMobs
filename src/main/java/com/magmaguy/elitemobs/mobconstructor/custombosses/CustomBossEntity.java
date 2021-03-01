@@ -8,7 +8,6 @@ import com.magmaguy.elitemobs.config.EventsConfig;
 import com.magmaguy.elitemobs.config.MobCombatSettingsConfig;
 import com.magmaguy.elitemobs.config.custombosses.CustomBossConfigFields;
 import com.magmaguy.elitemobs.config.custombosses.CustomBossesConfig;
-import com.magmaguy.elitemobs.entitytracker.EliteEntityTracker;
 import com.magmaguy.elitemobs.items.customitems.CustomItem;
 import com.magmaguy.elitemobs.mobconstructor.EliteMobEntity;
 import com.magmaguy.elitemobs.mobconstructor.SimplePersistentEntity;
@@ -45,35 +44,14 @@ import java.util.concurrent.ThreadLocalRandom;
 public class CustomBossEntity extends EliteMobEntity implements Listener, SimplePersistentEntityInterface {
 
     /**
-     * Constructs a custom boss from a player command
-     */
-    public static CustomBossEntity constructCustomBossCommand(String fileName,
-                                                              Location location,
-                                                              int mobLevel) {
-        CustomBossConfigFields customBossMobsConfigAttributes = CustomBossesConfig.getCustomBoss(fileName);
-        if (!customBossMobsConfigAttributes.isEnabled()) return null;
-
-        try {
-            LivingEntity livingEntity = (LivingEntity) location.getWorld()
-                    .spawnEntity(location, EntityType.valueOf(customBossMobsConfigAttributes.getEntityType()));
-            return new CustomBossEntity(
-                    customBossMobsConfigAttributes,
-                    livingEntity,
-                    mobLevel,
-                    ElitePowerParser.parsePowers(customBossMobsConfigAttributes.getPowers()));
-        } catch (Exception ex) {
-            new WarningMessage("Failed to spawn a Custom Boss via command because the entity type for it is not valid!");
-            ex.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
      * Generates a living entity for all custom bosses. Player command bypasses this check in order to bypass spawn restrictions.
      */
     private static LivingEntity generateLivingEntity(Location location,
                                                      CustomBossConfigFields customBossConfigFields) {
-        if (!customBossConfigFields.isEnabled()) return null;
+        if (customBossConfigFields == null || !customBossConfigFields.isEnabled()) {
+            new WarningMessage("Attempted to spawn a boss which had its configuration file disabled! Boss file: " + customBossConfigFields.getFileName());
+            return null;
+        }
         if (!EliteMobEntity.validSpawnLocation(location)) return null;
         try {
             WorldGuardSpawnEventBypasser.forceSpawn();
@@ -99,6 +77,33 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
                 livingEntity,
                 mobLevel,
                 ElitePowerParser.parsePowers(customBossMobsConfigAttributes.getPowers()));
+    }
+
+    /**
+     * Method used by mounts
+     * @param fileName
+     * @param location
+     * @param mobLevel
+     * @return
+     */
+    public static CustomBossEntity constructCustomBossMount(String fileName,
+                                                       Location location,
+                                                       int mobLevel) {
+        CustomBossConfigFields customBossMobsConfigAttributes = CustomBossesConfig.getCustomBoss(fileName);
+        customBossMobsConfigAttributes.setIsPersistent(false);
+        LivingEntity livingEntity = generateLivingEntity(location, customBossMobsConfigAttributes);
+        if (livingEntity == null) return null;
+
+        CustomBossEntity mount =  new CustomBossEntity(
+                customBossMobsConfigAttributes,
+                livingEntity,
+                mobLevel,
+                ElitePowerParser.parsePowers(customBossMobsConfigAttributes.getPowers()));
+
+        //prevent the mount from despawning based on distance, does not mount unloading based on chunks
+        mount.getLivingEntity().setRemoveWhenFarAway(false);
+
+        return mount;
     }
 
     /**
@@ -160,6 +165,8 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
     public static HashSet<CustomBossEntity> trackableCustomBosses = new HashSet<>();
 
     public CustomBossConfigFields customBossConfigFields;
+    public CustomBossEntity customBossMount = null;
+    public LivingEntity livingEntityMount = null;
     private final HashMap<CustomItem, Double> uniqueLootList = new HashMap<>();
 
     public LivingEntity advancedGetEntity() {
@@ -294,7 +301,11 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
     private void setDisguise() {
         if (customBossConfigFields.getDisguise() == null) return;
         if (!Bukkit.getPluginManager().isPluginEnabled("LibsDisguises")) return;
-        DisguiseEntity.disguise(customBossConfigFields.getDisguise(), getLivingEntity(), customBossConfigFields);
+        try {
+            DisguiseEntity.disguise(customBossConfigFields.getDisguise(), getLivingEntity(), customBossConfigFields);
+        } catch (Exception ex) {
+            new WarningMessage("Failed to load LibsDisguises disguise correctly!");
+        }
         super.setName(customBossConfigFields.getName());
     }
 
@@ -373,7 +384,7 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (!player.getWorld().equals(getLivingEntity().getWorld())) continue;
             TextComponent interactiveMessage = new TextComponent(MobCombatSettingsConfig.bossLocationMessage);
-            interactiveMessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/elitemobs trackcustomboss " + player.getName() + " " + this.uuid));
+            interactiveMessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/elitemobs trackcustomboss " + this.uuid));
             interactiveMessage.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Track the " + getName()).create()));
             player.spigot().sendMessage(interactiveMessage);
         }
@@ -479,9 +490,12 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
         }
         for (CustomBossBossBar customBossBossBar : customBossBossBars) customBossBossBar.remove(true);
         customBossBossBars.clear();
-        if (removeEntity)
+        if (removeEntity){
             if (getLivingEntity() != null)
                 getLivingEntity().remove();
+            if (simplePersistentEntity != null)
+                simplePersistentEntity.remove();
+        }
     }
 
     /**
@@ -491,6 +505,10 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
     public void softRemove() {
         if (customBossTrail != null) customBossTrail.terminateTrails();
         if (bossLocalScan != null) bossLocalScan.cancel();
+        if (livingEntityMount != null)
+            livingEntityMount.remove();
+        if (customBossMount != null)
+            customBossMount.remove(true);
     }
 
     /**
@@ -499,8 +517,6 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
     @Override
     public void chunkLoad() {
         setNewLivingEntity(persistentLocation);
-        //This bypasses the spawn event caller, since having it trigger the spawn message and so on every time a chunk gets loaded would be bad
-        new EliteEntityTracker(this, getPersistent());
         customBossTrail.restartTrails();
         setDisguise();
         if (regionalBossEntity != null)

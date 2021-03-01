@@ -6,6 +6,8 @@ import com.magmaguy.elitemobs.config.custombosses.CustomBossConfigFields;
 import com.magmaguy.elitemobs.config.custombosses.CustomBossesConfig;
 import com.magmaguy.elitemobs.entitytracker.EntityTracker;
 import com.magmaguy.elitemobs.mobconstructor.EliteMobEntity;
+import com.magmaguy.elitemobs.utils.DebugMessage;
+import com.magmaguy.elitemobs.utils.DeveloperMessage;
 import com.magmaguy.elitemobs.utils.WarningMessage;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -33,7 +35,6 @@ public class PhaseBossEntity {
     public PhaseBossEntity(CustomBossEntity customBossEntity, RegionalBossEntity regionalBossEntity) {
         this.regionalBossEntity = regionalBossEntity;
         initializePhaseBossEntity(customBossEntity);
-
     }
 
     public PhaseBossEntity(CustomBossEntity customBossEntity) {
@@ -68,10 +69,16 @@ public class PhaseBossEntity {
         currentPhase = nextBossPhase;
 
         CustomBossEntity customBossEntity = CustomBossEntity.constructCustomBoss(currentPhase.customBossConfigFields.getFileName(), eliteMobEntity.getLivingEntity().getLocation(), eliteMobEntity.getLevel(), currentPhase.healthPercentage);
+        if (customBossEntity == null) {
+            new WarningMessage("Phase boss failed to transition into phase " + currentPhase + " ! It was generated from file " + currentPhase.customBossConfigFields.getFileName() + " . The boss won't spawn! Fix the phase file, the region settings or report this to the dev!");
+            return;
+        }
         customBossEntity.addDamagers(eliteMobEntity.getDamagers());
 
         if (regionalBossEntity != null)
             regionalBossEntity.customBossEntity = customBossEntity;
+
+        customBossEntity.phaseBossEntity = this;
 
         eliteMobEntity.getLivingEntity().remove();
         EntityTracker.unregister(eliteMobEntity.uuid, RemovalReason.PHASE_BOSS_PHASE_END);
@@ -87,6 +94,16 @@ public class PhaseBossEntity {
         }
         eliteMobEntity.remove(true);
         EntityTracker.unregister(eliteMobEntity.uuid, RemovalReason.PHASE_BOSS_RESET);
+    }
+
+    /**
+     * Phase bosses tend to die on a phase different from the first one. This means that the plugin is unable to detect
+     * that bosses have died. As such, regional bosses have to be informed that they died.
+     */
+    public void deathHandler(){
+        if (regionalBossEntity == null) return;
+        if (currentPhase == bossPhases.get(0)) return;
+        regionalBossEntity.respawnRegionalBoss();
     }
 
     public static class PhaseBossEntityListener implements Listener {

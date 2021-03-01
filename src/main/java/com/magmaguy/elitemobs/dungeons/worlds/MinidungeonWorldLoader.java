@@ -1,9 +1,9 @@
 package com.magmaguy.elitemobs.dungeons.worlds;
 
 import com.magmaguy.elitemobs.EliteMobs;
-import com.magmaguy.elitemobs.dungeons.Minidungeon;
 import com.magmaguy.elitemobs.mobconstructor.custombosses.RegionalBossEntity;
 import com.magmaguy.elitemobs.thirdparty.worldguard.WorldGuardCompatibility;
+import com.magmaguy.elitemobs.dungeons.Minidungeon;
 import com.magmaguy.elitemobs.utils.InfoMessage;
 import com.magmaguy.elitemobs.utils.WarningMessage;
 import org.bukkit.Bukkit;
@@ -31,7 +31,7 @@ public class MinidungeonWorldLoader {
             new InfoMessage("Minidungeons world " + minidungeon.dungeonPackagerConfigFields.getWorldName() + " was loaded successfully!");
             minidungeon.isInstalled = true;
             if (EliteMobs.worldguardIsEnabled && minidungeon.dungeonPackagerConfigFields.getProtect())
-                WorldGuardCompatibility.protectWorldMinidugeonArea(world.getSpawnLocation());
+                WorldGuardCompatibility.protectWorldMinidugeonArea(world.getSpawnLocation(), minidungeon);
             return world;
         } catch (Exception exception) {
             new WarningMessage("Failed to load Minidungeon world " + minidungeon.dungeonPackagerConfigFields.getWorldName() + " !");
@@ -39,6 +39,7 @@ public class MinidungeonWorldLoader {
 
         return null;
     }
+
 
     public static void unloadWorld(Minidungeon minidungeon) {
         Bukkit.unloadWorld(minidungeon.dungeonPackagerConfigFields.getWorldName(), true);

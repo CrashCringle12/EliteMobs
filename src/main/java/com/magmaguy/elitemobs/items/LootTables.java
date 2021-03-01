@@ -10,6 +10,7 @@ import com.magmaguy.elitemobs.items.customenchantments.SoulbindEnchantment;
 import com.magmaguy.elitemobs.items.customitems.CustomItem;
 import com.magmaguy.elitemobs.items.itemconstructor.ItemConstructor;
 import com.magmaguy.elitemobs.mobconstructor.EliteMobEntity;
+import com.magmaguy.elitemobs.utils.InfoMessage;
 import com.magmaguy.elitemobs.utils.WarningMessage;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -88,12 +89,21 @@ public class LootTables implements Listener {
         }
     }
 
-    private static final boolean proceduralItemsOn = ProceduralItemGenerationSettingsConfig.doProceduralItemDrops;
-    private static final boolean customItemsOn = ItemSettingsConfig.doEliteMobsLoot && !CustomItem.getCustomItemStackList().isEmpty();
-    private static final boolean weighedItemsExist = CustomItem.getWeighedFixedItems() != null && !CustomItem.getWeighedFixedItems().isEmpty();
-    private static final boolean fixedItemsExist = CustomItem.getFixedItems() != null && !CustomItem.getFixedItems().isEmpty();
-    private static final boolean limitedItemsExist = CustomItem.getLimitedItem() != null && !CustomItem.getLimitedItem().isEmpty();
-    private static final boolean scalableItemsExist = CustomItem.getScalableItems() != null && !CustomItem.getScalableItems().isEmpty();
+    private static boolean proceduralItemsOn;
+    private static boolean customItemsOn;
+    private static boolean weighedItemsExist;
+    private static boolean fixedItemsExist;
+    private static boolean limitedItemsExist;
+    private static boolean scalableItemsExist;
+
+    public static void initialize() {
+        proceduralItemsOn = ProceduralItemGenerationSettingsConfig.doProceduralItemDrops;
+        customItemsOn = ItemSettingsConfig.doEliteMobsLoot && !CustomItem.getCustomItemStackList().isEmpty();
+        weighedItemsExist = CustomItem.getWeighedFixedItems() != null && !CustomItem.getWeighedFixedItems().isEmpty();
+        fixedItemsExist = CustomItem.getFixedItems() != null && !CustomItem.getFixedItems().isEmpty();
+        limitedItemsExist = CustomItem.getLimitedItem() != null && !CustomItem.getLimitedItem().isEmpty();
+        scalableItemsExist = CustomItem.getScalableItems() != null && !CustomItem.getScalableItems().isEmpty();
+    }
 
     private static Item generateLoot(EliteMobEntity eliteMobEntity, Player player) {
 
@@ -135,6 +145,12 @@ public class LootTables implements Listener {
         }
 
         String selectedLootSystem = pickWeighedProbability(weightedProbability);
+
+        if (selectedLootSystem == null) {
+            new InfoMessage("Your EliteMobs loot configuration resulted in no loot getting dropped. This is not a bug. " +
+                    "If you want players to be able to progress at all in the EliteMobs plugin, review your configuration settings.");
+            return null;
+        }
 
         switch (selectedLootSystem) {
             case "procedural":

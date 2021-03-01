@@ -6,6 +6,7 @@ import com.magmaguy.elitemobs.api.internal.RemovalReason;
 import com.magmaguy.elitemobs.config.npcs.NPCsConfig;
 import com.magmaguy.elitemobs.config.npcs.NPCsConfigFields;
 import com.magmaguy.elitemobs.entitytracker.EntityTracker;
+import com.magmaguy.elitemobs.entitytracker.NPCEntityTracker;
 import com.magmaguy.elitemobs.mobconstructor.SimplePersistentEntity;
 import com.magmaguy.elitemobs.mobconstructor.SimplePersistentEntityInterface;
 import com.magmaguy.elitemobs.npcs.chatter.NPCChatBubble;
@@ -23,6 +24,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -48,6 +50,7 @@ public class NPCEntity implements SimplePersistentEntityInterface {
     private boolean isSleeping = false;
     private NPCInteractions.NPCInteractionType npcInteractionType;
     private double timeout;
+    public boolean sleepScheduled = false;
 
     /**
      * Spawns NPC based off of the values in the NPCsConfig config file. Runs at startup and on reload.
@@ -62,6 +65,15 @@ public class NPCEntity implements SimplePersistentEntityInterface {
         //this is how the wandering trader works
         if (npCsConfigFields.getLocation().equalsIgnoreCase("null"))
             return;
+
+        ArrayList<NPCEntity> npcEntitiesToCull = new ArrayList<>();
+
+        for (NPCEntity npcEntity : NPCEntityTracker.npcEntities.values())
+            if (npcEntity.getSpawnLocation().equals(spawnLocation))
+                npcEntitiesToCull.add(npcEntity);
+
+        for (NPCEntity npcEntity : npcEntitiesToCull)
+            npcEntity.removeNPCEntity();
 
         WorldGuardSpawnEventBypasser.forceSpawn();
         try {
@@ -108,7 +120,7 @@ public class NPCEntity implements SimplePersistentEntityInterface {
 
         potentialLocation.add(potentialLocation.getDirection().normalize()).setY(location.getY());
 
-        if (NonSolidBlockTypes.isNonSolidBlock(potentialLocation.getBlock().getType()))
+        if (NonSolidBlockTypes.isPassthrough(potentialLocation.getBlock().getType()))
             this.spawnLocation = potentialLocation;
         else
             this.spawnLocation = location.clone();
@@ -210,11 +222,12 @@ public class NPCEntity implements SimplePersistentEntityInterface {
         this.role = role;
         this.roleDisplay = (ArmorStand) this.villager.getWorld().spawnEntity(villager.getLocation().add(new Vector(0, 1.72, 0)), EntityType.ARMOR_STAND);
         EntityTracker.registerArmorStands(this.roleDisplay);
-        this.roleDisplay.setCustomName(role);
+        this.roleDisplay.setCustomName(ChatColorConverter.convert(role));
         this.roleDisplay.setCustomNameVisible(true);
         this.roleDisplay.setMarker(true);
         this.roleDisplay.setVisible(false);
         this.roleDisplay.setGravity(false);
+        this.roleDisplay.setPersistent(false);
     }
 
     /**
