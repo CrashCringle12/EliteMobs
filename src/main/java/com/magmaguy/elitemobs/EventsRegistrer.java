@@ -159,6 +159,10 @@ public class EventsRegistrer {
         pluginManager.registerEvents(new AttackVacuum(), plugin);
         pluginManager.registerEvents(new ArrowRain(), plugin);
         pluginManager.registerEvents(new GroundPound(), plugin);
+        pluginManager.registerEvents(new LightningBolts(), plugin);
+        pluginManager.registerEvents(new FrostCone(), plugin);
+        pluginManager.registerEvents(new Thunderstorm(), plugin);
+        pluginManager.registerEvents(new Firestorm(), plugin);
 
         //Major mob powers
         pluginManager.registerEvents(new SkeletonPillar(), plugin);
@@ -231,6 +235,12 @@ public class EventsRegistrer {
         pluginManager.registerEvents(new BuyOrSellMenu(), plugin);
         pluginManager.registerEvents(new SellMenu(), plugin);
         pluginManager.registerEvents(new SetupMenu.SetupMenuListeners(), plugin);
+        pluginManager.registerEvents(new ScrapperMenu.ScrapperMenuEvents(), plugin);
+        pluginManager.registerEvents(new SmeltMenu.SmeltMenuEvents(), plugin);
+        pluginManager.registerEvents(new RepairMenu.RepairMenuEvents(), plugin);
+        pluginManager.registerEvents(new RefinerMenu.RefinerMenuEvents(), plugin);
+        pluginManager.registerEvents(new EnhancementMenu.EnhancementMenuEvents(), plugin);
+        pluginManager.registerEvents(new UnbindMenu.UnbinderMenuEvents(), plugin);
 
         //Minecraft behavior canceller
         if (DefaultConfig.preventCreeperDamageToPassiveMobs)
@@ -284,6 +294,7 @@ public class EventsRegistrer {
         pluginManager.registerEvents(new JusticeStormEnchantment.StormJusticeEvents(), plugin);
         pluginManager.registerEvents(new DrillingEnchantment.DrillingEnchantmentEvents(), plugin);
         pluginManager.registerEvents(new IceBreakerEnchantment.IceBreakerEnchantmentEvent(), plugin);
+        //pluginManager.registerEvents(new UnbindEnchantment.UnbindEvents(), plugin);
 
         //Initialize adventurer's guild
         pluginManager.registerEvents(new GuildRankMenuHandler(), plugin);

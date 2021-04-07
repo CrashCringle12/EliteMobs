@@ -38,9 +38,8 @@ public class CustomLootConfig {
             new MeteorShowerScrollConfig(),
             new JusticeStormShellConfig(),
             new SummonMerchantScrollConfig(),
-            new SummonWolfScrollConfig()
-
-
+            new SummonWolfScrollConfig(),
+            new UnbindScrollConfig()
     ));
 
     public static void initializeConfigs() {
