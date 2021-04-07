@@ -7,7 +7,6 @@ plugins {
 //Fixes issues related to special characters being used
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
-
 group 'com.magmaguy'
 version '7.2.41'
 
@@ -73,6 +72,7 @@ artifacts { // task 'build' runs generates uberjar
 }
 
 jar {
+    from {configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }  
     archiveClassifier.set('min') // we want the Uberjar to be distributed, this is the minified version
 }
 

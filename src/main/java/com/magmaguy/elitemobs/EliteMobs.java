@@ -6,8 +6,10 @@ package com.magmaguy.elitemobs;
 
 import com.magmaguy.elitemobs.api.EliteMobDamagedByPlayerEvent;
 import com.magmaguy.elitemobs.commands.CommandHandler;
+import com.magmaguy.elitemobs.commands.guild.AdventurersGuildCommand;
 import com.magmaguy.elitemobs.config.*;
 import com.magmaguy.elitemobs.config.commands.CommandsConfig;
+import com.magmaguy.elitemobs.config.configurationimporter.ConfigurationImporter;
 import com.magmaguy.elitemobs.config.custombosses.CustomBossConfigFields;
 import com.magmaguy.elitemobs.config.custombosses.CustomBossesConfig;
 import com.magmaguy.elitemobs.config.customloot.CustomLootConfig;
@@ -27,6 +29,7 @@ import com.magmaguy.elitemobs.entitytracker.EntityTracker;
 import com.magmaguy.elitemobs.events.EventLauncher;
 import com.magmaguy.elitemobs.gamemodes.nightmaremodeworld.DaylightWatchdog;
 import com.magmaguy.elitemobs.gamemodes.zoneworld.Grid;
+import com.magmaguy.elitemobs.items.LootTables;
 import com.magmaguy.elitemobs.items.customenchantments.CustomEnchantment;
 import com.magmaguy.elitemobs.items.customitems.CustomItem;
 import com.magmaguy.elitemobs.items.potioneffects.PlayerPotionEffects;
@@ -41,7 +44,6 @@ import com.magmaguy.elitemobs.playerdata.PlayerData;
 import com.magmaguy.elitemobs.powerstances.MajorPowerStanceMath;
 import com.magmaguy.elitemobs.powerstances.MinorPowerStanceMath;
 import com.magmaguy.elitemobs.quests.QuestsMenu;
-import com.magmaguy.elitemobs.thirdparty.bstats.CustomCharts;
 import com.magmaguy.elitemobs.thirdparty.placeholderapi.Placeholders;
 import com.magmaguy.elitemobs.thirdparty.worldguard.WorldGuardCompatibility;
 import com.magmaguy.elitemobs.treasurechest.TreasureChest;
@@ -51,7 +53,6 @@ import com.magmaguy.elitemobs.utils.WarningMessage;
 import com.magmaguy.elitemobs.versionnotifier.VersionChecker;
 import com.magmaguy.elitemobs.versionnotifier.VersionWarner;
 import com.magmaguy.elitemobs.worlds.CustomWorldLoading;
-import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
@@ -60,6 +61,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,7 +72,6 @@ public class EliteMobs extends JavaPlugin {
     public static List<World> zoneBasedSpawningWorlds = new ArrayList<>();
     public static List<World> nightmareWorlds = new ArrayList<>();
     public Object placeholders = null;
-    public static Metrics metrics;
 
     @Override
     public void onEnable() {
@@ -178,10 +179,7 @@ public class EliteMobs extends JavaPlugin {
             this.placeholders = placeholders;
         }
 
-        //Enable stats
-        metrics = new Metrics(this, 1081);
-        //Initialize custom charts
-        new CustomCharts();
+
 
         //Imports custom configurations and mindungeons from the import folder
         ConfigurationImporter.initializeConfigs();
