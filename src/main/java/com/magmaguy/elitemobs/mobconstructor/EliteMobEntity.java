@@ -48,6 +48,7 @@ public class EliteMobEntity {
     private LivingEntity livingEntity;
     private int eliteLevel;
     private double eliteTier;
+    private double health;
     private double maxHealth;
     private String name;
     /*
@@ -295,9 +296,9 @@ public class EliteMobEntity {
         String parsedName = name.replace("$level", this.eliteLevel + "")
                 .replace("$normalLevel", ChatColorConverter.convert("&2[&a" + this.eliteLevel + "&2]&f"))
                 .replace("$minibossLevel", ChatColorConverter.convert("&6〖&e" + this.eliteLevel + "&6〗&f"))
-                .replace("$bossLevel", ChatColorConverter.convert("&4『&c" + this.eliteLevel + "&4』&f"))
+                .replace("$bossLevel", ChatColorConverter.convert("&4『&c" + this.eliteLevel + "&4�?&f"))
                 .replace("$reinforcementLevel", ChatColorConverter.convert("&8〔&7") + this.eliteLevel + "&8〕&f")
-                .replace("$eventBossLevel", ChatColorConverter.convert("&4「&c" + this.eliteLevel + "&4」&f"));
+                .replace("$eventBossLevel", ChatColorConverter.convert("&4「&c" + this.eliteLevel + "&4�?&f"));
         this.name = ChatColorConverter.convert(parsedName);
         this.getLivingEntity().setCustomName(this.name);
         livingEntity.setCustomNameVisible(DefaultConfig.alwaysShowNametags);
@@ -335,10 +336,20 @@ public class EliteMobEntity {
         livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
         livingEntity.setHealth(maxHealth);
     }
-
-    public void setHealth(double health) {
-        livingEntity.setHealth(health);
+    public void heal(double healValue) {
+        damage(-healValue);
     }
+    public void setHealth(double health) {
+        health = Math.max(health, 0D);
+
+        this.health = health;
+        if (this.maxHealth <= 2048)
+            livingEntity.setHealth(health);
+        else
+            livingEntity.setHealth(Math.ceil(livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue() * this.health / this.maxHealth));
+
+        livingEntity.setHealth(health);
+    }    
 
     public double getHealth() {
         return livingEntity.getHealth();
