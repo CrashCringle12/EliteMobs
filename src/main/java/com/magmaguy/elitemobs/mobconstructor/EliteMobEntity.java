@@ -296,9 +296,9 @@ public class EliteMobEntity {
         String parsedName = name.replace("$level", this.eliteLevel + "")
                 .replace("$normalLevel", ChatColorConverter.convert("&2[&a" + this.eliteLevel + "&2]&f"))
                 .replace("$minibossLevel", ChatColorConverter.convert("&6〖&e" + this.eliteLevel + "&6〗&f"))
-                .replace("$bossLevel", ChatColorConverter.convert("&4『&c" + this.eliteLevel + "&4�?&f"))
+                .replace("$bossLevel", ChatColorConverter.convert("&4『&c" + this.eliteLevel + "&4』&f"))
                 .replace("$reinforcementLevel", ChatColorConverter.convert("&8〔&7") + this.eliteLevel + "&8〕&f")
-                .replace("$eventBossLevel", ChatColorConverter.convert("&4「&c" + this.eliteLevel + "&4�?&f"));
+                .replace("$eventBossLevel", ChatColorConverter.convert("&4「&c" + this.eliteLevel + "&4」&f"));
         this.name = ChatColorConverter.convert(parsedName);
         this.getLivingEntity().setCustomName(this.name);
         livingEntity.setCustomNameVisible(DefaultConfig.alwaysShowNametags);
