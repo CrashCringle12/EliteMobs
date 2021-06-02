@@ -24,7 +24,7 @@ public class MobPropertiesConfig {
     }
 
 
-    private static final ArrayList<MobPropertiesConfigFields> mobPropertiesConfigFieldsList = new ArrayList<>(Arrays.asList(
+    private static final ArrayList<MobPropertiesConfigFields> mobPropertiesConfigFieldsList = new ArrayList<MobPropertiesConfigFields>(Arrays.asList(
             new EliteBlazeConfig(),
             new EliteCaveSpiderConfig(),
             new EliteCreeperConfig(),
@@ -52,6 +52,7 @@ public class MobPropertiesConfig {
             new EliteZombieConfig(),
             new EliteGhastConfig(),
             new EliteWolfConfig(),
+            new EliteEnderDragon(),
             new SuperChickenConfig(),
             new SuperCowConfig(),
             new SuperMushroomCowConfig(),

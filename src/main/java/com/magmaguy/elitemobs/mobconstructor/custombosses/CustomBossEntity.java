@@ -3,6 +3,7 @@ package com.magmaguy.elitemobs.mobconstructor.custombosses;
 import com.magmaguy.elitemobs.ChatColorConverter;
 import com.magmaguy.elitemobs.MetadataHandler;
 import com.magmaguy.elitemobs.api.EliteMobEnterCombatEvent;
+import com.magmaguy.elitemobs.api.EliteMobExitCombatEvent;
 import com.magmaguy.elitemobs.config.ConfigValues;
 import com.magmaguy.elitemobs.config.EventsConfig;
 import com.magmaguy.elitemobs.config.MobCombatSettingsConfig;
@@ -17,6 +18,7 @@ import com.magmaguy.elitemobs.thirdparty.discordsrv.DiscordSRVAnnouncement;
 import com.magmaguy.elitemobs.thirdparty.libsdisguises.DisguiseEntity;
 import com.magmaguy.elitemobs.thirdparty.worldguard.WorldGuardSpawnEventBypasser;
 import com.magmaguy.elitemobs.utils.CommandRunner;
+import com.magmaguy.elitemobs.utils.DeveloperMessage;
 import com.magmaguy.elitemobs.utils.WarningMessage;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -38,6 +40,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ThreadLocalRandom;
@@ -49,16 +52,33 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
      */
     private static LivingEntity generateLivingEntity(Location location,
                                                      CustomBossConfigFields customBossConfigFields) {
-        if (customBossConfigFields == null || !customBossConfigFields.isEnabled()) {
+        if (customBossConfigFields == null) {
+            new WarningMessage("Attempted to spawn a boss but it was null! The error's been prevented, but here's what lead up to this:");
+            Arrays.stream(Thread.currentThread().getStackTrace()).forEach(stackTraceElement -> new WarningMessage(stackTraceElement.toString()));
+            return null;
+        }
+        if (!customBossConfigFields.isEnabled()) {
             new WarningMessage("Attempted to spawn a boss which had its configuration file disabled! Boss file: " + customBossConfigFields.getFileName());
             return null;
         }
         if (!EliteMobEntity.validSpawnLocation(location)) return null;
         try {
             WorldGuardSpawnEventBypasser.forceSpawn();
-            return (LivingEntity) location.getWorld().spawnEntity(location, EntityType.valueOf(customBossConfigFields.getEntityType()));
+            LivingEntity livingEntity = (LivingEntity) location.getWorld().spawnEntity(location, EntityType.valueOf(customBossConfigFields.getEntityType()));
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if (livingEntity.getType().equals(EntityType.ENDER_DRAGON))
+                        ((EnderDragon) livingEntity).setPhase(EnderDragon.Phase.FLY_TO_PORTAL);
+                    livingEntity.setAI(true);
+                }
+            }.runTaskLater(MetadataHandler.PLUGIN, 20 * 3);
+
+            return livingEntity;
         } catch (Exception ex) {
             new WarningMessage("Failed to spawn a Custom Boss' living entity! Is the region protected against spawns? Custom boss: " + customBossConfigFields.getFileName() + " entry: " + location.toString());
+            ex.printStackTrace();
             return null;
         }
     }
@@ -82,20 +102,21 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
 
     /**
      * Method used by mounts
+     *
      * @param fileName
      * @param location
      * @param mobLevel
      * @return
      */
     public static CustomBossEntity constructCustomBossMount(String fileName,
-                                                       Location location,
-                                                       int mobLevel) {
+                                                            Location location,
+                                                            int mobLevel) {
         CustomBossConfigFields customBossMobsConfigAttributes = CustomBossesConfig.getCustomBoss(fileName);
         customBossMobsConfigAttributes.setIsPersistent(false);
         LivingEntity livingEntity = generateLivingEntity(location, customBossMobsConfigAttributes);
         if (livingEntity == null) return null;
 
-        CustomBossEntity mount =  new CustomBossEntity(
+        CustomBossEntity mount = new CustomBossEntity(
                 customBossMobsConfigAttributes,
                 livingEntity,
                 mobLevel,
@@ -491,7 +512,7 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
         }
         for (CustomBossBossBar customBossBossBar : customBossBossBars) customBossBossBar.remove(true);
         customBossBossBars.clear();
-        if (removeEntity){
+        if (removeEntity) {
             if (getLivingEntity() != null)
                 getLivingEntity().remove();
             if (simplePersistentEntity != null)
@@ -559,7 +580,7 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
         else return persistentLocation;
     }
 
-    public double getDamageModifier(Material material){
+    public double getDamageModifier(Material material) {
         return customBossConfigFields.getDamageModifier(material);
     }
 
@@ -572,7 +593,7 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
     }
 
     public static class CustomBossEntityEvents implements Listener {
-        @EventHandler
+        @EventHandler(ignoreCancelled = true)
         public void removeSlowEvent(EliteMobEnterCombatEvent eliteMobEnterCombatEvent) {
             if (eliteMobEnterCombatEvent.getEliteMobEntity().customBossEntity == null) return;
             if (eliteMobEnterCombatEvent.getEliteMobEntity().getLivingEntity().getPotionEffect(PotionEffectType.SLOW) == null)
@@ -580,6 +601,17 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
             if (eliteMobEnterCombatEvent.getEliteMobEntity().getLivingEntity().getPotionEffect(PotionEffectType.SLOW).getAmplifier() == 10)
                 return;
             eliteMobEnterCombatEvent.getEliteMobEntity().getLivingEntity().removePotionEffect(PotionEffectType.SLOW);
+        }
+
+        @EventHandler(ignoreCancelled = true)
+        public void onExitCombat(EliteMobExitCombatEvent event) {
+            if (event.getEliteMobEntity().customBossEntity == null) return;
+            if (event.getEliteMobEntity().customBossEntity.customBossConfigFields.getCullReinforcements()) {
+                for (CustomBossEntity customBossEntity : event.getEliteMobEntity().eliteReinforcementEntities)
+                    customBossEntity.remove(true);
+                for (Entity entity : event.getEliteMobEntity().nonEliteReinforcementEntities)
+                    entity.remove();
+            }
         }
     }
 
