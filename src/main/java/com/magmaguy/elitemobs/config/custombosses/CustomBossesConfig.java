@@ -44,7 +44,9 @@ public class CustomBossesConfig {
             new EmberConfig(),
             new SnoopyConfig(),
             new SummonableWolfConfig(),
-            new BinderOfWorldsPhase1EndermiteReinforcementConfig()
+            new BinderOfWorldsPhase1EndermiteReinforcementConfig(),
+            new BinderOfWorldsPhase3GhastReinforcementConfig(),
+            new BinderOfWorldsPhase3EndermanReinforcementConfig()
     ));
 
     /**

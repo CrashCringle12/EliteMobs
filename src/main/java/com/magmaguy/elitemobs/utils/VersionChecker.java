@@ -4,42 +4,28 @@ import org.bukkit.Bukkit;
 
 public class VersionChecker {
 
-    public static boolean currentVersionIsUnder(int version, int subVersion) {
+    /**
+     * Compares a Minecraft version with the current version on the server. Returns true if the version on the server is older.
+     *
+     * @param majorVersion Target major version to compare (i.e. 1.>>>17<<<.0)
+     * @param minorVersion Target minor version to compare (i.e. 1.17.>>>0<<<)
+     * @return Whether the version is under the value to be compared
+     */
+    public static boolean serverVersionOlderThan(int majorVersion, int minorVersion) {
 
-        if (Bukkit.getBukkitVersion().split("[.]").length < 4) {
+        String[] splitVersion = Bukkit.getBukkitVersion().split("[.]");
 
-            try {
-                return Integer.parseInt(Bukkit.getBukkitVersion().split("[.]")[1].substring(0, 2)) < version;
-            } catch (Exception ex) {
-                return Integer.parseInt(Bukkit.getBukkitVersion().split("[.]")[1].substring(0, 1)) < version;
-            }
+        int actualMajorVersion = Integer.parseInt(splitVersion[1].split("-")[0]);
 
-        }
+        int actualMinorVersion = 0;
+        if (splitVersion.length > 2)
+            actualMinorVersion = Integer.parseInt(splitVersion[2].split("-")[0]);
 
-        if (Integer.parseInt(Bukkit.getBukkitVersion().split("[.]")[1]) < version) return true;
+        if (actualMajorVersion < majorVersion)
+            return true;
 
-        if (Integer.parseInt(Bukkit.getBukkitVersion().split("[.]")[1]) == version) {
-            try {
-
-                byte actualSubversion = Byte.parseByte(Bukkit.getBukkitVersion().split("[.]")[2].substring(0, 1));
-                return actualSubversion < subVersion;
-
-            } catch (Exception e) {
-
-                try {
-
-                    byte actualSubversion = Byte.parseByte(Bukkit.getBukkitVersion().split("[.]")[2].substring(0, 0));
-                    return actualSubversion < subVersion;
-
-                } catch (Exception ex) {
-
-                    Bukkit.getLogger().warning("[EliteMobs] Couldn't read version properly, report this to the developer!");
-                    return false;
-
-                }
-            }
-
-        }
+        if (splitVersion.length > 2)
+            return actualMajorVersion == majorVersion && actualMinorVersion < minorVersion;
 
         return false;
 

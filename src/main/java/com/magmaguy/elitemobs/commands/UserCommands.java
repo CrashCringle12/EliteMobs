@@ -13,13 +13,12 @@ import com.magmaguy.elitemobs.commands.admin.CheckTierOthersCommand;
 import com.magmaguy.elitemobs.commands.combat.CheckTierCommand;
 import com.magmaguy.elitemobs.commands.guild.AdventurersGuildCommand;
 import com.magmaguy.elitemobs.commands.quest.QuestCommand;
+import com.magmaguy.elitemobs.config.DefaultConfig;
 import com.magmaguy.elitemobs.items.EliteItemLore;
 import com.magmaguy.elitemobs.items.ShareItem;
-import com.magmaguy.elitemobs.menus.CustomShopMenu;
-import com.magmaguy.elitemobs.menus.ProceduralShopMenu;
+import com.magmaguy.elitemobs.menus.*;
 import com.magmaguy.elitemobs.mobconstructor.custombosses.CustomBossEntity;
 import com.magmaguy.elitemobs.playerdata.statusscreen.PlayerStatusScreen;
-import com.magmaguy.elitemobs.config.DefaultConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -34,6 +33,7 @@ public class UserCommands {
         manager.command(builder.literal("adventurersguild", "ag")
                 .meta(CommandMeta.DESCRIPTION, "Teleports players to the Adventurer's Guild Hub or opens the Adventurer's Guild menu.")
                 .senderType(Player.class)
+                .permission("elitemobs.adventurersguild.command")
                 //permission is dealt inside of the command
                 .handler(commandContext -> {
                     AdventurersGuildCommand.adventurersGuildCommand((Player) commandContext.getSender());
@@ -66,6 +66,78 @@ public class UserCommands {
                         CustomShopMenu.customShopInitializer((Player) commandContext.getSender());
                 }));
 
+        // /em repair
+        manager.command(builder.literal("repair")
+                .meta(CommandMeta.DESCRIPTION, "Opens the custom item shop or teleports the player to the Adventurer's Guild Hub")
+                .senderType(Player.class)
+                .permission("elitemobs.repair.command")
+                .handler(commandContext -> {
+                    if (!AdventurersGuildCommand.adventurersGuildTeleport((Player) commandContext.getSender())) {
+                        RepairMenu repairMenu = new RepairMenu();
+                        repairMenu.constructRepairMenu((Player) commandContext.getSender());
+                    }
+                }));
+
+        // /em enhance
+        manager.command(builder.literal("enhance")
+                .meta(CommandMeta.DESCRIPTION, "Opens the custom item shop or teleports the player to the Adventurer's Guild Hub")
+                .senderType(Player.class)
+                .permission("elitemobs.enhancer.command")
+                .handler(commandContext -> {
+                    if (!AdventurersGuildCommand.adventurersGuildTeleport((Player) commandContext.getSender())) {
+                        EnhancementMenu enhancementMenu = new EnhancementMenu();
+                        enhancementMenu.constructEnhancementMenu((Player) commandContext.getSender());
+                    }
+                }));
+
+        // /em refine
+        manager.command(builder.literal("refine")
+                .meta(CommandMeta.DESCRIPTION, "Opens the custom item shop or teleports the player to the Adventurer's Guild Hub")
+                .senderType(Player.class)
+                .permission("elitemobs.refiner.command")
+                .handler(commandContext -> {
+                    if (!AdventurersGuildCommand.adventurersGuildTeleport((Player) commandContext.getSender())) {
+                        RefinerMenu refinerMenu = new RefinerMenu();
+                        refinerMenu.constructRefinerMenu((Player) commandContext.getSender());
+                    }
+                }));
+
+        // /em smelt
+        manager.command(builder.literal("smelt")
+                .meta(CommandMeta.DESCRIPTION, "Opens the custom item shop or teleports the player to the Adventurer's Guild Hub")
+                .senderType(Player.class)
+                .permission("elitemobs.smelt.command")
+                .handler(commandContext -> {
+                    if (!AdventurersGuildCommand.adventurersGuildTeleport((Player) commandContext.getSender())) {
+                        SmeltMenu smeltMenu = new SmeltMenu();
+                        smeltMenu.constructSmeltMenu((Player) commandContext.getSender());
+                    }
+                }));
+
+        // /em smelt
+        manager.command(builder.literal("scrap")
+                .meta(CommandMeta.DESCRIPTION, "Opens the custom item shop or teleports the player to the Adventurer's Guild Hub")
+                .senderType(Player.class)
+                .permission("elitemobs.scrap.command")
+                .handler(commandContext -> {
+                    if (!AdventurersGuildCommand.adventurersGuildTeleport((Player) commandContext.getSender())) {
+                        ScrapperMenu scrapperMenu = new ScrapperMenu();
+                        scrapperMenu.constructScrapMenu((Player) commandContext.getSender());
+                    }
+                }));
+
+        // /em unbind
+        manager.command(builder.literal("unbind")
+                .meta(CommandMeta.DESCRIPTION, "Opens the custom item shop or teleports the player to the Adventurer's Guild Hub")
+                .senderType(Player.class)
+                .permission("elitemobs.unbind.command")
+                .handler(commandContext -> {
+                    if (!AdventurersGuildCommand.adventurersGuildTeleport((Player) commandContext.getSender())) {
+                        UnbindMenu unbindMenu = new UnbindMenu();
+                        unbindMenu.constructUnbinderMenu((Player) commandContext.getSender());
+                    }
+                }));
+
         // /em wallet
         manager.command(builder.literal("wallet")
                 .meta(CommandMeta.DESCRIPTION, "Checks the EliteMobs currency")
@@ -82,11 +154,9 @@ public class UserCommands {
         manager.command(builder.literal("quest")
                 .meta(CommandMeta.DESCRIPTION, "Checks the EliteMobs currency")
                 .senderType(Player.class)
-                .permission("elitemobs.quest")
+                .permission("elitemobs.quest.command")
                 .handler(commandContext -> {
-                    if (DefaultConfig.otherCommandsLeadToEMStatusMenu)
-                        new PlayerStatusScreen((Player) commandContext.getSender());
-                    else
+                    if (!AdventurersGuildCommand.adventurersGuildTeleport((Player) commandContext.getSender()))
                         new QuestCommand((Player) commandContext.getSender());
                 }));
 

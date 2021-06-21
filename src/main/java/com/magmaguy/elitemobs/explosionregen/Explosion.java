@@ -4,6 +4,7 @@ import com.magmaguy.elitemobs.MetadataHandler;
 import com.magmaguy.elitemobs.api.EliteExplosionEvent;
 import com.magmaguy.elitemobs.combatsystem.EliteProjectile;
 import com.magmaguy.elitemobs.entitytracker.EntityTracker;
+import com.magmaguy.elitemobs.entitytracker.TemporaryBlockTracker;
 import com.magmaguy.elitemobs.mobconstructor.EliteMobEntity;
 import com.magmaguy.elitemobs.powers.ElitePower;
 import com.magmaguy.elitemobs.utils.EntityFinder;
@@ -58,7 +59,7 @@ public class Explosion {
         detonatedBlocks.clear();
     }
 
-    private int delayBeforeRegen = 2;
+    private final int delayBeforeRegen = 2;
 
     public void regenerate() {
 
@@ -122,7 +123,7 @@ public class Explosion {
     }
 
     public static class ExplosionEvent implements Listener {
-        @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+        @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
         public void entityExplodeEvent(EntityExplodeEvent event) {
             EliteMobEntity eliteMobEntity = EntityTracker.getEliteMobEntity(event.getEntity());
             if (eliteMobEntity != null) {
@@ -136,15 +137,19 @@ public class Explosion {
         }
     }
 
+    public static void generateFakeExplosion(List<Block> blockList, Entity entity, ElitePower elitePower, Location explosionSourceLocation) {
+        generateExplosion(blockList, entity, elitePower, explosionSourceLocation);
+    }
+
     public static void generateFakeExplosion(List<Block> blockList, Entity entity) {
-        generateExplosion(blockList, entity);
+        generateExplosion(blockList, entity, null, null);
     }
 
     private static void generateExplosion(EntityExplodeEvent event) {
-        generateExplosion(event.blockList(), event.getEntity());
+        generateExplosion(event.blockList(), event.getEntity(), null, null);
     }
 
-    private static void generateExplosion(List<Block> blockList, Entity entity) {
+    private static void generateExplosion(List<Block> blockList, Entity entity, ElitePower elitePower, Location explosionSource) {
 
         ArrayList<BlockState> blockStates = new ArrayList<>();
 
@@ -152,6 +157,8 @@ public class Explosion {
             if (block.getType().isAir() ||
                     block.getType().equals(Material.FIRE) ||
                     block.isLiquid())
+                continue;
+            if (TemporaryBlockTracker.temporaryBlocks.contains(block))
                 continue;
             nearbyBlockScan(blockStates, block.getState());
         }
@@ -162,8 +169,6 @@ public class Explosion {
             eliteMobEntity = EntityTracker.getEliteMobEntity(shooter);
 
         EliteExplosionEvent eliteExplosionEvent = null;
-
-        ElitePower elitePower;
 
         //for projectiles
         if (entity instanceof Projectile) {
@@ -177,11 +182,14 @@ public class Explosion {
         } else {
             eliteExplosionEvent = new EliteExplosionEvent(
                     eliteMobEntity,
-                    elitePower = null,
+                    elitePower,
                     entity.getLocation(),
                     blockStates);
             if (eliteExplosionEvent.isCancelled()) return;
         }
+
+        if (explosionSource != null)
+            eliteExplosionEvent.setExplosionSourceLocation(explosionSource);
 
         eliteExplosionEvent.visualExplosionEffect(elitePower);
 

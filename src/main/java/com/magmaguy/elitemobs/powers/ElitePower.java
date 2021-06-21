@@ -7,8 +7,10 @@ import com.magmaguy.elitemobs.mobconstructor.EliteMobEntity;
 import com.magmaguy.elitemobs.powers.bosspowers.*;
 import com.magmaguy.elitemobs.powers.defensivepowers.*;
 import com.magmaguy.elitemobs.powers.majorpowers.blaze.TrackingFireball;
+import com.magmaguy.elitemobs.powers.majorpowers.enderdragon.EnderDragonDiscoFireballs;
 import com.magmaguy.elitemobs.powers.majorpowers.enderdragon.EnderDragonEmpoweredLightning;
 import com.magmaguy.elitemobs.powers.majorpowers.enderdragon.EnderDragonShockwave;
+import com.magmaguy.elitemobs.powers.majorpowers.enderdragon.EnderDragonTornado;
 import com.magmaguy.elitemobs.powers.majorpowers.enderdragon.bombardments.*;
 import com.magmaguy.elitemobs.powers.majorpowers.skeleton.SkeletonPillar;
 import com.magmaguy.elitemobs.powers.majorpowers.skeleton.SkeletonTrackingArrow;
@@ -41,6 +43,8 @@ public class ElitePower {
             new SpiritWalk(),
             new SummonRaug(),
             new SummonAssistant(),
+
+	    new SummonTheReturned(),
             new MeteorShower(),
             new BulletHell(),
             new PrimeHell(),
@@ -63,9 +67,12 @@ public class ElitePower {
             new EnderDragonPotionBombardment(),
             new EnderDragonArrowBombardment(),
             new EnderDragonEndermiteBombardment(),
-            new EnderDragonFireballBombardment(),
+            new EnderDragonAimedFireball(),
             new EnderDragonEmpoweredLightning(),
             new EnderDragonShockwave(),
+            new EnderDragonDiscoFireballs(),
+            new EnderDragonFireballBombardment(),
+            new EnderDragonTornado(),
 
             //Defensive powers
             new Invisibility(),
@@ -171,7 +178,8 @@ public class ElitePower {
     private final String fileName;
     private final String trail;
     private final String name;
-    private int powerCooldownTime, globalCooldownTime;
+    private final int powerCooldownTime;
+    private final int globalCooldownTime;
     private boolean isFiring = false;
     private final FileConfiguration configuration;
 

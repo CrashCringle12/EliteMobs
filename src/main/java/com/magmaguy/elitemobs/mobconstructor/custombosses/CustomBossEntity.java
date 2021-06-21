@@ -18,7 +18,6 @@ import com.magmaguy.elitemobs.thirdparty.discordsrv.DiscordSRVAnnouncement;
 import com.magmaguy.elitemobs.thirdparty.libsdisguises.DisguiseEntity;
 import com.magmaguy.elitemobs.thirdparty.worldguard.WorldGuardSpawnEventBypasser;
 import com.magmaguy.elitemobs.utils.CommandRunner;
-import com.magmaguy.elitemobs.utils.DeveloperMessage;
 import com.magmaguy.elitemobs.utils.WarningMessage;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -77,7 +76,7 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
 
             return livingEntity;
         } catch (Exception ex) {
-            new WarningMessage("Failed to spawn a Custom Boss' living entity! Is the region protected against spawns? Custom boss: " + customBossConfigFields.getFileName() + " entry: " + location.toString());
+            new WarningMessage("Failed to spawn a Custom Boss' living entity! Is the region protected against spawns / is your boss configuration valid? Custom boss: " + customBossConfigFields.getFileName() + " entry: " + location.toString());
             ex.printStackTrace();
             return null;
         }
@@ -112,7 +111,7 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
                                                             Location location,
                                                             int mobLevel) {
         CustomBossConfigFields customBossMobsConfigAttributes = CustomBossesConfig.getCustomBoss(fileName);
-        customBossMobsConfigAttributes.setIsPersistent(false);
+        customBossMobsConfigAttributes.setPersistent(false);
         LivingEntity livingEntity = generateLivingEntity(location, customBossMobsConfigAttributes);
         if (livingEntity == null) return null;
 
@@ -210,7 +209,7 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
                 customBossConfigFields.getName(),
                 elitePowers,
                 CreatureSpawnEvent.SpawnReason.CUSTOM,
-                customBossConfigFields.getIsPersistent());
+                customBossConfigFields.isPersistent());
         initializeCustomBoss(customBossConfigFields);
         spawnMessage();
         if (customBossConfigFields.getPhases().size() > 0)
@@ -302,7 +301,7 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
 
     private void setBaby() {
         if (super.getLivingEntity() instanceof Ageable)
-            if (customBossConfigFields.isBaby())
+            if (customBossConfigFields.getBaby())
                 ((Ageable) super.getLivingEntity()).setBaby();
             else
                 ((Ageable) super.getLivingEntity()).setAdult();
@@ -348,10 +347,10 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
     }
 
     private void setFollowRange() {
-        if (customBossConfigFields.getFollowRange() != null &&
-                customBossConfigFields.getFollowRange() > 0 &&
+        if (customBossConfigFields.getFollowDistance() != null &&
+                customBossConfigFields.getFollowDistance() > 0 &&
                 getLivingEntity() instanceof Mob)
-            getLivingEntity().getAttribute(Attribute.GENERIC_FOLLOW_RANGE).setBaseValue(customBossConfigFields.getFollowRange());
+            getLivingEntity().getAttribute(Attribute.GENERIC_FOLLOW_RANGE).setBaseValue(customBossConfigFields.getFollowDistance());
     }
 
     private CustomBossTrail customBossTrail;
@@ -608,9 +607,11 @@ public class CustomBossEntity extends EliteMobEntity implements Listener, Simple
             if (event.getEliteMobEntity().customBossEntity == null) return;
             if (event.getEliteMobEntity().customBossEntity.customBossConfigFields.getCullReinforcements()) {
                 for (CustomBossEntity customBossEntity : event.getEliteMobEntity().eliteReinforcementEntities)
-                    customBossEntity.remove(true);
+                    if (customBossEntity != null)
+                        customBossEntity.remove(true);
                 for (Entity entity : event.getEliteMobEntity().nonEliteReinforcementEntities)
-                    entity.remove();
+                    if (entity != null)
+                        entity.remove();
             }
         }
     }

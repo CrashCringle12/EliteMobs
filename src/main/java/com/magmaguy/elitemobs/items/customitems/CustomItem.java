@@ -8,6 +8,7 @@ import com.magmaguy.elitemobs.items.LootTables;
 import com.magmaguy.elitemobs.items.ScalableItemConstructor;
 import com.magmaguy.elitemobs.items.customenchantments.*;
 import com.magmaguy.elitemobs.items.itemconstructor.ItemConstructor;
+import com.magmaguy.elitemobs.utils.DeveloperMessage;
 import com.magmaguy.elitemobs.utils.WarningMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -410,8 +411,8 @@ public class CustomItem {
                         getLore(),
                         null,
                         player,
-                        showItemWorth);
-        parseCustomModelID(itemStack);
+                        showItemWorth,
+                        customLootConfigFields.getCustomModelID());
         return itemStack;
     }
 
@@ -427,7 +428,6 @@ public class CustomItem {
             case SCALABLE:
                 itemStack = ScalableItemConstructor.constructScalableItem(itemTier, this, player);
         }
-        parseCustomModelID(itemStack);
         return itemStack;
     }
 
@@ -481,13 +481,6 @@ public class CustomItem {
 
     public ItemType getItemType() {
         return itemType;
-    }
-
-    public void parseCustomModelID(ItemStack itemStack) {
-        if (customLootConfigFields.getCustomModelID() == null) return;
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.setCustomModelData(customLootConfigFields.getCustomModelID());
-        itemStack.setItemMeta(itemMeta);
     }
 
 }

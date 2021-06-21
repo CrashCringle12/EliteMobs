@@ -128,7 +128,7 @@ public class EliteMobDamagedByPlayerEvent extends Event implements Cancellable {
             if (livingEntity.getHealth() - event.getDamage() * 2 <= 0)
                 event.setDamage(0);
             //No antiexploit checks for dungeons
-            if (!(EliteMobs.worldguardIsEnabled &&
+            if (!(EliteMobs.worldGuardIsEnabled &&
                     !WorldGuardFlagChecker.checkFlag(
                             eliteMobEntity.getLivingEntity().getLocation(),
                             WorldGuardCompatibility.getEliteMobsAntiExploitFlag())))
