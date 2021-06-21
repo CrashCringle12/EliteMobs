@@ -29,7 +29,7 @@ public class SummonAssistant extends BossPower implements Listener {
         if (!eventIsValid(event, summonAssistant)) return;
         if (ThreadLocalRandom.current().nextDouble() > 0.25) return;
 
-        summonAssistant.doCooldown(20 * 20, event.getEliteMobEntity());
+        summonAssistant.doCooldown(event.getEliteMobEntity());
         doSummonParticles(event.getEliteMobEntity());
     }
 

@@ -34,7 +34,7 @@ public class PrimeHell extends BossPower implements Listener {
         if (!eventIsValid(event, primeHell)) return;
         if (ThreadLocalRandom.current().nextDouble() > 0.25) return;
 
-        primeHell.doCooldown(20 * 20, event.getEliteMobEntity());
+        primeHell.doCooldown(event.getEliteMobEntity());
         doPrimeHell(event.getEliteMobEntity());
 
     }

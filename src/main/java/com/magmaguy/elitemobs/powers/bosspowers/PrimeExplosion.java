@@ -34,7 +34,7 @@ public class PrimeExplosion extends BossPower implements Listener {
         if (!eventIsValid(event, primeExplosion)) return;
         if (ThreadLocalRandom.current().nextDouble() > 0.25) return;
 
-        primeExplosion.doCooldown(20 * 20, event.getEliteMobEntity());
+        primeExplosion.doCooldown(event.getEliteMobEntity());
         doPrimeExplosion(event.getEliteMobEntity());
 
     }

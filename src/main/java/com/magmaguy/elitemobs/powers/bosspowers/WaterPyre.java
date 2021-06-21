@@ -30,7 +30,7 @@ public class WaterPyre extends BossPower implements Listener {
         if (!eventIsValid(event, waterPyre)) return;
         if (ThreadLocalRandom.current().nextDouble() > 0.25) return;
 
-        waterPyre.doCooldown(20 * 20, event.getEliteMobEntity());
+        waterPyre.doCooldown(event.getEliteMobEntity());
         doWaterPyrePhase1(event.getEliteMobEntity());
 
     }
